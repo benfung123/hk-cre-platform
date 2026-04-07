@@ -1,18 +1,8 @@
 'use client'
 
-import { useState, useCallback, useMemo } from 'react'
-import Map, { 
-  Marker, 
-  Popup, 
-  NavigationControl,
-  FullscreenControl,
-  ScaleControl,
-  Source,
-  Layer,
-  type MapRef
-} from 'react-map-gl/mapbox'
-import 'mapbox-gl/dist/mapbox-gl.css'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { useState, useCallback, useEffect, useRef, useMemo } from 'react'
+import AMapLoader from '@amap/amap-jsapi-loader'
+import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -38,12 +28,6 @@ interface BuildingMapProps {
   showSearch?: boolean
 }
 
-interface MapViewState {
-  longitude: number
-  latitude: number
-  zoom: number
-}
-
 export function BuildingMap({
   properties,
   selectedDistrict,
@@ -53,16 +37,19 @@ export function BuildingMap({
   showSearch = true
 }: BuildingMapProps) {
   const t = useTranslations()
-  const [viewState, setViewState] = useState<MapViewState>({
-    longitude: MAP_CONFIG.center.lng,
-    latitude: MAP_CONFIG.center.lat,
-    zoom: MAP_CONFIG.zoom.overview
-  })
+  const mapContainerRef = useRef<HTMLDivElement>(null)
+  const mapRef = useRef<any>(null)
+  const [mapInstance, setMapInstance] = useState<any>(null)
+  const [AMap, setAMap] = useState<any>(null)
   const [selectedProperty, setSelectedProperty] = useState<Property | null>(null)
-  const [hoveredProperty, setHoveredProperty] = useState<Property | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
   const [mapStyle, setMapStyle] = useState<keyof typeof MAP_CONFIG.styles>('light')
   const [showMTR, setShowMTR] = useState(false)
+  const [markers, setMarkers] = useState<any[]>([])
+  const [mtrMarkers, setMtrMarkers] = useState<any[]>([])
+  const [infoWindow, setInfoWindow] = useState<any>(null)
+
+  const amapKey = process.env.NEXT_PUBLIC_AMAP_KEY
 
   // Filter properties based on search
   const filteredProperties = useMemo(() => {
@@ -75,31 +62,62 @@ export function BuildingMap({
     )
   }, [properties, searchQuery])
 
-  // Navigate to district
-  const navigateToDistrict = useCallback((district: string) => {
-    const center = DISTRICT_CENTERS[district]
-    if (center) {
-      setViewState({
-        longitude: center.lng,
-        latitude: center.lat,
-        zoom: center.zoom
-      })
-    }
-  }, [])
+  // Initialize Amap
+  useEffect(() => {
+    if (!amapKey || !mapContainerRef.current || mapInstance) return
 
-  // Handle property marker click
-  const handlePropertyClick = useCallback((property: Property) => {
-    setSelectedProperty(property)
-    setViewState({
-      longitude: property.lng || MAP_CONFIG.center.lng,
-      latitude: property.lat || MAP_CONFIG.center.lat,
-      zoom: MAP_CONFIG.zoom.property
+    AMapLoader.load({
+      key: amapKey,
+      version: '2.0',
+      plugins: ['AMap.Scale', 'AMap.ToolBar', 'AMap.MapType', 'AMap.InfoWindow']
+    }).then((AMap) => {
+      setAMap(AMap)
+      
+      if (!mapContainerRef.current) return
+      
+      const map = new AMap.Map(mapContainerRef.current, {
+        zoom: MAP_CONFIG.zoom.overview,
+        center: [MAP_CONFIG.center.lng, MAP_CONFIG.center.lat],
+        viewMode: '2D',
+        mapStyle: `amap://styles/${MAP_CONFIG.styles.light}`
+      })
+
+      // Add controls
+      map.addControl(new AMap.Scale())
+      map.addControl(new AMap.ToolBar({
+        position: 'RB'
+      }))
+
+      // Create info window
+      const iw = new AMap.InfoWindow({
+        offset: new AMap.Pixel(0, -30),
+        closeWhenClickMap: true
+      })
+      setInfoWindow(iw)
+
+      setMapInstance(map)
+      mapRef.current = map
+    }).catch((error) => {
+      console.error('Failed to load Amap:', error)
     })
-    onPropertySelect?.(property)
-  }, [onPropertySelect])
+
+    return () => {
+      if (mapRef.current) {
+        mapRef.current.destroy()
+        mapRef.current = null
+      }
+    }
+  }, [amapKey])
+
+  // Update map style
+  useEffect(() => {
+    if (mapInstance) {
+      mapInstance.setMapStyle(`amap://styles/${MAP_CONFIG.styles[mapStyle]}`)
+    }
+  }, [mapInstance, mapStyle])
 
   // Get marker color based on grade
-  const getGradeColor = (grade: string) => {
+  const getGradeColor = useCallback((grade: string) => {
     switch (grade) {
       case 'A+': return '#ef4444' // Red
       case 'A': return '#f97316'  // Orange
@@ -107,35 +125,145 @@ export function BuildingMap({
       case 'C': return '#6b7280'  // Gray
       default: return '#6b7280'
     }
-  }
+  }, [])
 
-  // Build GeoJSON for properties with coordinates
-  const propertiesGeoJSON = useMemo(() => {
-    const features = filteredProperties
-      .filter(p => p.lat && p.lng)
-      .map(p => ({
-        type: 'Feature' as const,
-        geometry: {
-          type: 'Point' as const,
-          coordinates: [p.lng, p.lat]
-        },
-        properties: {
-          id: p.id,
-          name: p.name,
-          grade: p.grade,
-          district: p.district
-        }
-      }))
+  // Create marker content
+  const createMarkerContent = useCallback((property: Property) => {
+    const color = getGradeColor(property.grade)
+    const div = document.createElement('div')
+    div.className = 'cursor-pointer transition-transform hover:scale-110'
+    div.innerHTML = `
+      <div style="
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background-color: ${color};
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        border: 2px solid white;
+      ">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2H2v10h10V2zM22 2h-10v10h10V2zM12 14H2v8h10v-8zM22 14h-10v8h10v-8z"/>
+        </svg>
+      </div>
+    `
+    return div
+  }, [getGradeColor])
+
+  // Create MTR marker content
+  const createMTRMarkerContent = useCallback(() => {
+    const div = document.createElement('div')
+    div.innerHTML = `
+      <div style="
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        background-color: #dc2626;
+        border: 2px solid white;
+        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+      "></div>
+    `
+    return div
+  }, [])
+
+  // Handle property click
+  const handlePropertyClick = useCallback((property: Property) => {
+    setSelectedProperty(property)
     
-    return {
-      type: 'FeatureCollection' as const,
-      features
+    if (mapInstance && property.lng && property.lat) {
+      mapInstance.setZoomAndCenter(MAP_CONFIG.zoom.property, [property.lng, property.lat])
+      
+      // Show info window
+      if (infoWindow) {
+        const content = `
+          <div style="padding: 12px; min-width: 200px; font-family: system-ui, -apple-system, sans-serif;">
+            <h3 style="font-weight: 600; font-size: 14px; margin-bottom: 4px;">${property.name}</h3>
+            <p style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">${property.address}</p>
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+              <span style="background-color: #f3f4f6; padding: 2px 8px; border-radius: 4px; font-size: 12px;">${property.grade}</span>
+              <span style="font-size: 12px; color: #6b7280;">${property.district}</span>
+            </div>
+            ${property.total_sqft ? `<p style="font-size: 12px;">${(property.total_sqft / 1000000).toFixed(1)}M sqft</p>` : ''}
+            <a href="/properties/${property.id}" style="font-size: 12px; color: #3b82f6; text-decoration: none; margin-top: 8px; display: block;">View Details →</a>
+          </div>
+        `
+        infoWindow.setContent(content)
+        infoWindow.open(mapInstance, [property.lng, property.lat])
+      }
     }
-  }, [filteredProperties])
+    
+    onPropertySelect?.(property)
+  }, [mapInstance, infoWindow, onPropertySelect])
 
-  const mapboxToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN
+  // Update property markers
+  useEffect(() => {
+    if (!mapInstance || !AMap) return
 
-  if (!mapboxToken) {
+    // Clear existing markers
+    markers.forEach(marker => marker.setMap(null))
+    
+    // Create new markers
+    const newMarkers: any[] = []
+    
+    filteredProperties.forEach((property) => {
+      if (!property.lat || !property.lng) return
+      
+      const marker = new AMap.Marker({
+        position: [property.lng, property.lat],
+        content: createMarkerContent(property),
+        anchor: 'bottom-center',
+        offset: new AMap.Pixel(0, -16)
+      })
+      
+      marker.on('click', () => handlePropertyClick(property))
+      marker.setMap(mapInstance)
+      newMarkers.push(marker)
+    })
+    
+    setMarkers(newMarkers)
+  }, [filteredProperties, mapInstance, AMap, createMarkerContent, handlePropertyClick])
+
+  // Update MTR markers
+  useEffect(() => {
+    if (!mapInstance || !AMap) return
+
+    // Clear existing MTR markers
+    mtrMarkers.forEach(marker => marker.setMap(null))
+    
+    if (!showMTR) {
+      setMtrMarkers([])
+      return
+    }
+    
+    // Create MTR markers
+    const newMarkers: any[] = []
+    
+    MTR_STATIONS.forEach((station) => {
+      const marker = new AMap.Marker({
+        position: [station.lng, station.lat],
+        content: createMTRMarkerContent(),
+        anchor: 'center',
+        title: station.name
+      })
+      
+      marker.setMap(mapInstance)
+      newMarkers.push(marker)
+    })
+    
+    setMtrMarkers(newMarkers)
+  }, [showMTR, mapInstance, AMap, createMTRMarkerContent])
+
+  // Navigate to district
+  const navigateToDistrict = useCallback((district: string) => {
+    const center = DISTRICT_CENTERS[district]
+    if (center && mapInstance) {
+      mapInstance.setZoomAndCenter(center.zoom, [center.lng, center.lat])
+    }
+  }, [mapInstance])
+
+  if (!amapKey) {
     return (
       <Card className="w-full" style={{ height }}>
         <CardContent className="flex items-center justify-center h-full">
@@ -143,7 +271,7 @@ export function BuildingMap({
             <MapPin className="h-12 w-12 mx-auto text-muted-foreground mb-2" />
             <p className="text-muted-foreground">Map configuration required</p>
             <p className="text-sm text-muted-foreground mt-1">
-              Please set NEXT_PUBLIC_MAPBOX_TOKEN in your environment
+              Please set NEXT_PUBLIC_AMAP_KEY in your environment
             </p>
           </div>
         </CardContent>
@@ -225,113 +353,12 @@ export function BuildingMap({
           </div>
         </div>
 
-        {/* Map */}
-        <Map
-          {...viewState}
-          onMove={evt => setViewState(evt.viewState)}
-          style={{ width: '100%', height: '100%' }}
-          mapStyle={MAP_CONFIG.styles[mapStyle]}
-          mapboxAccessToken={mapboxToken}
-          minZoom={10}
-          maxZoom={18}
-        >
-          <NavigationControl position="top-right" />
-          <FullscreenControl position="top-right" />
-          <ScaleControl position="bottom-right" />
-
-          {/* Property Markers */}
-          {filteredProperties.map((property) => {
-            if (!property.lat || !property.lng) return null
-            
-            return (
-              <Marker
-                key={property.id}
-                longitude={property.lng}
-                latitude={property.lat}
-                anchor="bottom"
-                onClick={() => handlePropertyClick(property)}
-              >
-                <div
-                  className="cursor-pointer transition-transform hover:scale-110"
-                  onMouseEnter={() => setHoveredProperty(property)}
-                  onMouseLeave={() => setHoveredProperty(null)}
-                >
-                  <div
-                    className="w-8 h-8 rounded-full flex items-center justify-center shadow-lg border-2 border-white"
-                    style={{ backgroundColor: getGradeColor(property.grade) }}
-                  >
-                    <Building2 className="w-4 h-4 text-white" />
-                  </div>
-                </div>
-              </Marker>
-            )
-          })}
-
-          {/* MTR Station Markers */}
-          {showMTR && MTR_STATIONS.map((station) => (
-            <Marker
-              key={station.name}
-              longitude={station.lng}
-              latitude={station.lat}
-              anchor="center"
-            >
-              <div className="w-4 h-4 rounded-full bg-red-600 border-2 border-white shadow-md" />
-            </Marker>
-          ))}
-
-          {/* Property Popup */}
-          {selectedProperty && (
-            <Popup
-              longitude={selectedProperty.lng || 0}
-              latitude={selectedProperty.lat || 0}
-              anchor="top"
-              onClose={() => setSelectedProperty(null)}
-              closeButton={true}
-              closeOnClick={false}
-              offset={15}
-            >
-              <div className="p-2 min-w-[200px]">
-                <h3 className="font-semibold text-sm mb-1">{selectedProperty.name}</h3>
-                <p className="text-xs text-muted-foreground mb-2">{selectedProperty.address}</p>
-                <div className="flex items-center gap-2 mb-2">
-                  <Badge variant="secondary" className="text-xs">
-                    {selectedProperty.grade}
-                  </Badge>
-                  <span className="text-xs text-muted-foreground">
-                    {selectedProperty.district}
-                  </span>
-                </div>
-                {selectedProperty.total_sqft && (
-                  <p className="text-xs">
-                    {(selectedProperty.total_sqft / 1000000).toFixed(1)}M sqft
-                  </p>
-                )}
-                <a
-                  href={`/properties/${selectedProperty.id}`}
-                  className="text-xs text-primary hover:underline mt-2 block"
-                >
-                  View Details →
-                </a>
-              </div>
-            </Popup>
-          )}
-
-          {/* Hover Popup */}
-          {hoveredProperty && hoveredProperty.id !== selectedProperty?.id && (
-            <Popup
-              longitude={hoveredProperty.lng || 0}
-              latitude={hoveredProperty.lat || 0}
-              anchor="top"
-              closeButton={false}
-              closeOnClick={false}
-              offset={10}
-            >
-              <div className="p-1">
-                <p className="text-xs font-medium">{hoveredProperty.name}</p>
-              </div>
-            </Popup>
-          )}
-        </Map>
+        {/* Map Container */}
+        <div 
+          ref={mapContainerRef}
+          className="w-full h-full"
+          style={{ backgroundColor: '#f0f0f0' }}
+        />
       </div>
     </Card>
   )

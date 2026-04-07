@@ -5,18 +5,18 @@ export const MAP_CONFIG = {
     lat: 22.3193,
     lng: 114.1694
   },
-  // Default zoom levels
+  // Default zoom levels for Amap
   zoom: {
     overview: 11,
     district: 13,
     property: 16
   },
-  // Mapbox style URLs
+  // Amap style options (using Amap built-in styles)
   styles: {
-    light: 'mapbox://styles/mapbox/light-v11',
-    dark: 'mapbox://styles/mapbox/dark-v11',
-    streets: 'mapbox://styles/mapbox/streets-v12',
-    satellite: 'mapbox://styles/mapbox/satellite-streets-v12'
+    light: 'normal',      // Standard map
+    dark: 'dark',         // Dark mode
+    streets: 'normal',    // Streets view
+    satellite: 'satellite' // Satellite view
   },
   // Hong Kong bounds (approximate)
   bounds: {
