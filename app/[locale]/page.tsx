@@ -28,29 +28,20 @@ export default async function HomePage() {
 
   return (
     <div className="flex flex-col">
-      {/* Hero Section */}
-      <section className="relative py-20 lg:py-32 bg-gradient-to-b from-muted/50 to-background overflow-hidden">
-        {/* Background Hero Image */}
-        <div className="absolute inset-0 z-0">
-          <img
-            src="/og-image.png"
-            alt="HK Commercial Real Estate"
-            className="w-full h-full object-cover opacity-20"
-          />
-          <div className="absolute inset-0 bg-gradient-to-b from-background/80 via-background/50 to-background" />
-        </div>
-        
-        <div className="container relative z-10 flex flex-col items-center text-center space-y-8">
-          <div className="space-y-4 max-w-3xl">
-            <h1 className="text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl">
-              {t('home.hero.title')}
-            </h1>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              {t('home.hero.subtitle')}
-            </p>
+      {/* Hero Section - Using banner as main image */}
+      <section className="py-8 bg-gradient-to-b from-muted/50 to-background">
+        <div className="container">
+          {/* Hero Banner Image */}
+          <div className="relative w-full max-w-5xl mx-auto mb-8">
+            <img
+              src="/og-image.png"
+              alt="HK Commercial Real Estate Platform"
+              className="w-full h-auto rounded-lg shadow-lg"
+            />
           </div>
           
-          <div className="w-full max-w-xl">
+          {/* Search Bar */}
+          <div className="max-w-xl mx-auto">
             <form action="/properties" className="flex items-center space-x-2">
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -65,7 +56,8 @@ export default async function HomePage() {
             </form>
           </div>
           
-          <div className="flex flex-wrap justify-center gap-2">
+          {/* District Quick Links */}
+          <div className="flex flex-wrap justify-center gap-2 mt-6">
             {['Central', 'Admiralty', 'Tsim Sha Tsui', 'Causeway Bay'].map((district) => (
               <Link key={district} href={`/properties?district=${district}`}>
                 <Badge variant="secondary" className="cursor-pointer hover:bg-secondary/80">
