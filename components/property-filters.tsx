@@ -1,5 +1,6 @@
 'use client'
 
+import { useTranslations } from 'next-intl'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -17,12 +18,19 @@ interface PropertyFiltersProps {
 }
 
 export function PropertyFilters({ districts }: PropertyFiltersProps) {
+  const t = useTranslations()
   const router = useRouter()
   const searchParams = useSearchParams()
 
   const currentDistrict = searchParams.get('district') || ''
   const currentGrade = searchParams.get('grade') || ''
   const currentSearch = searchParams.get('search') || ''
+
+  // Helper function to get translated district name
+  const getDistrictTranslation = (district: string) => {
+    const districtKey = district.replace(/\s+/g, '')
+    return t(`districts.${districtKey}`) || district
+  }
 
   const handleFilterChange = (key: string, value: string) => {
     const params = new URLSearchParams(searchParams.toString())
@@ -47,7 +55,7 @@ export function PropertyFilters({ districts }: PropertyFiltersProps) {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             type="search"
-            placeholder="Search properties..."
+            placeholder={t('properties.filters.searchPlaceholder')}
             defaultValue={currentSearch}
             onChange={(e) => {
               const timeoutId = setTimeout(() => {
@@ -64,13 +72,13 @@ export function PropertyFilters({ districts }: PropertyFiltersProps) {
           onValueChange={(value) => handleFilterChange('district', value || '')}
         >
           <SelectTrigger className="w-full sm:w-48">
-            <SelectValue placeholder="All Districts" />
+            <SelectValue placeholder={t('properties.filters.allDistricts')} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">All Districts</SelectItem>
+            <SelectItem value="">{t('properties.filters.allDistricts')}</SelectItem>
             {districts.map((district) => (
               <SelectItem key={district} value={district}>
-                {district}
+                {getDistrictTranslation(district)}
               </SelectItem>
             ))}
           </SelectContent>
@@ -81,10 +89,10 @@ export function PropertyFilters({ districts }: PropertyFiltersProps) {
           onValueChange={(value) => handleFilterChange('grade', value || '')}
         >
           <SelectTrigger className="w-full sm:w-40">
-            <SelectValue placeholder="All Grades" />
+            <SelectValue placeholder={t('properties.filters.allGrades')} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">All Grades</SelectItem>
+            <SelectItem value="">{t('properties.filters.allGrades')}</SelectItem>
             <SelectItem value="A+">A+</SelectItem>
             <SelectItem value="A">A</SelectItem>
             <SelectItem value="B">B</SelectItem>
@@ -95,7 +103,7 @@ export function PropertyFilters({ districts }: PropertyFiltersProps) {
         {hasFilters && (
           <Button variant="ghost" onClick={clearFilters}>
             <X className="h-4 w-4 mr-2" />
-            Clear
+            {t('properties.filters.clear')}
           </Button>
         )}
       </div>

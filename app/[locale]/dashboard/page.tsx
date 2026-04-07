@@ -1,3 +1,4 @@
+import { getTranslations } from 'next-intl/server'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { getDistrictStats, getMarketStats } from '@/lib/data'
@@ -8,16 +9,24 @@ import { TrendingUp, Building2, DollarSign, Activity } from 'lucide-react'
 export const dynamic = 'force-dynamic'
 
 export default async function DashboardPage() {
+  const t = await getTranslations()
+  
   const [marketStats, districtStats] = await Promise.all([
     getMarketStats(),
     getDistrictStats()
   ])
 
+  // Helper function to get translated district name
+  const getDistrictTranslation = (district: string) => {
+    const districtKey = district.replace(/\s+/g, '')
+    return t(`districts.${districtKey}`) || district
+  }
+
   return (
     <div className="container py-8">
       <div className="flex flex-col gap-8">
         <div>
-          <h1 className="text-3xl font-bold">Analytics Dashboard</h1>
+          <h1 className="text-3xl font-bold">{t('nav.analytics')}</h1>
           <p className="text-muted-foreground">
             Market insights and trends for Hong Kong commercial real estate
           </p>
@@ -27,7 +36,7 @@ export default async function DashboardPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">Total Properties</CardTitle>
+              <CardTitle className="text-sm font-medium">{t('home.stats.properties')}</CardTitle>
               <Building2 className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
@@ -38,7 +47,7 @@ export default async function DashboardPage() {
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">Avg Rent/sqft</CardTitle>
+              <CardTitle className="text-sm font-medium">{t('home.stats.avgRent')}</CardTitle>
               <DollarSign className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
@@ -49,7 +58,7 @@ export default async function DashboardPage() {
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">Total Transactions</CardTitle>
+              <CardTitle className="text-sm font-medium">{t('home.stats.transactions')}</CardTitle>
               <Activity className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
@@ -60,7 +69,7 @@ export default async function DashboardPage() {
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">Avg Price/sqft</CardTitle>
+              <CardTitle className="text-sm font-medium">{t('home.stats.avgPrice')}</CardTitle>
               <TrendingUp className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
@@ -133,15 +142,15 @@ export default async function DashboardPage() {
                 <thead>
                   <tr className="border-b">
                     <th className="text-left py-3 px-4 font-medium">District</th>
-                    <th className="text-right py-3 px-4 font-medium">Properties</th>
-                    <th className="text-right py-3 px-4 font-medium">Transactions</th>
-                    <th className="text-right py-3 px-4 font-medium">Avg Price/sqft</th>
+                    <th className="text-right py-3 px-4 font-medium">{t('home.stats.properties')}</th>
+                    <th className="text-right py-3 px-4 font-medium">{t('home.stats.transactions')}</th>
+                    <th className="text-right py-3 px-4 font-medium">{t('home.stats.avgPrice')}</th>
                   </tr>
                 </thead>
                 <tbody>
                   {districtStats.map((stat) => (
                     <tr key={stat.district} className="border-b last:border-0">
-                      <td className="py-3 px-4">{stat.district}</td>
+                      <td className="py-3 px-4">{getDistrictTranslation(stat.district)}</td>
                       <td className="text-right py-3 px-4">{stat.propertyCount}</td>
                       <td className="text-right py-3 px-4">{stat.transactionCount}</td>
                       <td className="text-right py-3 px-4">${stat.avgPricePerSqft}</td>

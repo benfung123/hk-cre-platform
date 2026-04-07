@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -13,6 +14,7 @@ import { supabase } from '@/lib/supabase/client'
 export const dynamic = 'force-dynamic'
 
 export default function LoginPage() {
+  const t = useTranslations('nav')
   const router = useRouter()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -43,7 +45,7 @@ export default function LoginPage() {
     <div className="container flex items-center justify-center min-h-[calc(100vh-200px)]">
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl">Log in</CardTitle>
+          <CardTitle className="text-2xl">{t('login')}</CardTitle>
           <CardDescription>
             Enter your credentials to access your account
           </CardDescription>
@@ -78,13 +80,13 @@ export default function LoginPage() {
             )}
             
             <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? 'Logging in...' : 'Log in'}
+              {loading ? 'Logging in...' : t('login')}
             </Button>
           </form>
 
           <div className="mt-4 text-center text-sm">
             Don&apos;t have an account?{' '}
-            <Link href="/signup" className="underline">Sign up</Link>
+            <Link href="/signup" className="underline">{t('signup')}</Link>
           </div>
         </CardContent>
       </Card>

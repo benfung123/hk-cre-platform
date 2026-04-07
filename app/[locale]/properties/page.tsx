@@ -1,4 +1,5 @@
 import { Suspense } from 'react'
+import { getLocale, getTranslations } from 'next-intl/server'
 import { PropertyList } from '@/components/property-list'
 import { PropertyFilters } from '@/components/property-filters'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -17,6 +18,8 @@ export const dynamic = 'force-dynamic'
 
 export default async function PropertiesPage({ searchParams }: PropertiesPageProps) {
   const params = await searchParams
+  const t = await getTranslations()
+  
   const [properties, districts] = await Promise.all([
     getProperties({
       district: params.district,
@@ -30,9 +33,9 @@ export default async function PropertiesPage({ searchParams }: PropertiesPagePro
     <div className="container py-8">
       <div className="flex flex-col gap-8">
         <div>
-          <h1 className="text-3xl font-bold">Properties</h1>
+          <h1 className="text-3xl font-bold">{t('properties.page.title')}</h1>
           <p className="text-muted-foreground">
-            Browse commercial properties across Hong Kong
+            {t('properties.page.subtitle')}
           </p>
         </div>
 

@@ -1,0 +1,120 @@
+{
+  "metadata": {
+    "title": "HK CRE Platform - Commercial Real Estate Data",
+    "description": "Commercial real estate data platform for Hong Kong and Asia"
+  },
+  "nav": {
+    "home": "HK CRE",
+    "properties": "Properties",
+    "transactions": "Transactions",
+    "analytics": "Analytics",
+    "about": "About",
+    "contact": "Contact",
+    "login": "Log in",
+    "signup": "Sign up",
+    "search": "Search",
+    "searchPlaceholder": "Search properties..."
+  },
+  "home": {
+    "hero": {
+      "title": "Hong Kong Commercial Real Estate Data",
+      "subtitle": "Comprehensive data platform for commercial properties, transactions, and market analytics across Hong Kong and Asia.",
+      "searchPlaceholder": "Search by building name, address, or tenant...",
+      "searchButton": "Search"
+    },
+    "stats": {
+      "properties": "Properties",
+      "avgRent": "Avg Rent/sqft",
+      "transactions": "Transactions",
+      "avgPrice": "Avg Price/sqft"
+    },
+    "featured": {
+      "title": "Featured Properties",
+      "subtitle": "Premium commercial buildings in Hong Kong",
+      "viewAll": "View All"
+    },
+    "districts": {
+      "title": "District Overview"
+    },
+    "map": {
+      "title": "Explore on Map",
+      "subtitle": "Browse commercial properties across Hong Kong",
+      "viewFullMap": "View Full Map"
+    }
+  },
+  "properties": {
+    "page": {
+      "title": "Properties",
+      "subtitle": "Browse commercial properties across Hong Kong"
+    },
+    "filters": {
+      "allDistricts": "All Districts",
+      "allGrades": "All Grades",
+      "searchPlaceholder": "Search properties...",
+      "clear": "Clear"
+    },
+    "card": {
+      "built": "Built",
+      "floors": "Floors",
+      "totalArea": "Total Area"
+    },
+    "noResults": {
+      "title": "No properties found",
+      "subtitle": "Try adjusting your filters"
+    },
+    "view": {
+      "list": "List",
+      "map": "Map",
+      "split": "Split"
+    }
+  },
+  "propertyDetail": {
+    "back": "Back to Properties",
+    "grade": "Grade",
+    "totalFloorArea": "Total Floor Area",
+    "numberOfFloors": "Number of Floors",
+    "currentTenants": "Current Tenants",
+    "mapView": "Location",
+    "tabs": {
+      "transactions": "Transactions",
+      "tenancies": "Tenancies"
+    },
+    "noTransactions": "No transactions recorded",
+    "noTenancies": "No tenancies recorded",
+    "transaction": {
+      "sale": "Sale",
+      "lease": "Lease",
+      "from": "From",
+      "to": "To"
+    },
+    "nearbyMTR": "Nearby MTR Stations",
+    "openInGoogleMaps": "Open in Google Maps",
+    "getDirections": "Get Directions"
+  },
+  "districts": {
+    "Central": "Central",
+    "Admiralty": "Admiralty",
+    "WanChai": "Wan Chai",
+    "CausewayBay": "Causeway Bay",
+    "TsimShaTsui": "Tsim Sha Tsui",
+    "MongKok": "Mong Kok",
+    "NorthPoint": "North Point",
+    "QuarryBay": "Quarry Bay",
+    "KowloonBay": "Kowloon Bay",
+    "KwunTong": "Kwun Tong"
+  },
+  "map": {
+    "mtrStations": "MTR Stations",
+    "streetView": "Street View",
+    "directions": "Directions",
+    "viewDetails": "View Details"
+  },
+  "footer": {
+    "copyright": "© {year} HK CRE Platform. All rights reserved."
+  },
+  "language": {
+    "en": "English",
+    "zh-hk": "繁體中文",
+    "zh-cn": "简体中文"
+  }
+}

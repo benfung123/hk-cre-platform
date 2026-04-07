@@ -1,12 +1,14 @@
 import { notFound } from 'next/navigation'
+import { getTranslations } from 'next-intl/server'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Separator } from '@/components/ui/separator'
-import { ArrowLeft, MapPin, Building2, Calendar, DollarSign, Users } from 'lucide-react'
+import { ArrowLeft, MapPin, Calendar, DollarSign, Users } from 'lucide-react'
 import { getPropertyById, getPropertyTransactions, getPropertyTenancies } from '@/lib/data'
+import { PropertyLocation } from '@/components/PropertyLocation'
 
 interface PropertyPageProps {
   params: Promise<{
@@ -19,6 +21,8 @@ export const dynamic = 'force-dynamic'
 
 export default async function PropertyPage({ params }: PropertyPageProps) {
   const { id } = await params
+  const t = await getTranslations()
+  
   const [property, transactions, tenancies] = await Promise.all([
     getPropertyById(id),
     getPropertyTransactions(id),
@@ -29,6 +33,12 @@ export default async function PropertyPage({ params }: PropertyPageProps) {
     notFound()
   }
 
+  // Helper function to get translated district name
+  const getDistrictTranslation = (district: string) => {
+    const districtKey = district.replace(/\s+/g, '')
+    return t(`districts.${districtKey}`) || district
+  }
+
   return (
     <div className="container py-8">
       <div className="flex flex-col gap-8">
@@ -36,7 +46,7 @@ export default async function PropertyPage({ params }: PropertyPageProps) {
         <Link href="/properties">
           <Button variant="ghost" size="sm">
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Properties
+            {t('propertyDetail.back')}
           </Button>
         </Link>
 
@@ -47,18 +57,18 @@ export default async function PropertyPage({ params }: PropertyPageProps) {
               <h1 className="text-3xl font-bold">{property.name}</h1>
               <p className="text-lg text-muted-foreground">{property.address}</p>
             </div>
-            <Badge className="text-lg px-4 py-1">Grade {property.grade}</Badge>
+            <Badge className="text-lg px-4 py-1">{t('propertyDetail.grade')} {property.grade}</Badge>
           </div>
 
           <div className="flex flex-wrap gap-4">
             <div className="flex items-center text-muted-foreground">
               <MapPin className="h-4 w-4 mr-1" />
-              {property.district}
+              {getDistrictTranslation(property.district)}
             </div>
             {property.year_built && (
               <div className="flex items-center text-muted-foreground">
                 <Calendar className="h-4 w-4 mr-1" />
-                Built {property.year_built}
+                {t('properties.card.built')} {property.year_built}
               </div>
             )}
           </div>
@@ -70,7 +80,7 @@ export default async function PropertyPage({ params }: PropertyPageProps) {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <Card>
             <CardHeader className="pb-2">
-              <CardDescription>Total Floor Area</CardDescription>
+              <CardDescription>{t('propertyDetail.totalFloorArea')}</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
@@ -83,7 +93,7 @@ export default async function PropertyPage({ params }: PropertyPageProps) {
 
           <Card>
             <CardHeader className="pb-2">
-              <CardDescription>Number of Floors</CardDescription>
+              <CardDescription>{t('propertyDetail.numberOfFloors')}</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{property.floors || 'N/A'}</div>
@@ -92,7 +102,7 @@ export default async function PropertyPage({ params }: PropertyPageProps) {
 
           <Card>
             <CardHeader className="pb-2">
-              <CardDescription>Current Tenants</CardDescription>
+              <CardDescription>{t('propertyDetail.currentTenants')}</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{tenancies.length}</div>
@@ -100,31 +110,71 @@ export default async function PropertyPage({ params }: PropertyPageProps) {
           </Card>
         </div>
 
-        {/* Map Placeholder */}
-        <Card className="overflow-hidden">
-          <CardContent className="p-0">
-            <div className="bg-muted h-64 flex items-center justify-center">
-              <div className="text-center">
-                <MapPin className="h-12 w-12 mx-auto text-muted-foreground mb-2" />
-                <p className="text-muted-foreground">Map View</p>
-                <p className="text-sm text-muted-foreground">
-                  Lat: {property.lat}, Lng: {property.lng}
-                </p>
+        {/* Map Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2">
+            <PropertyLocation 
+              property={property} 
+              height="400px"
+              showNearbyMTR={true}
+              showBuildingOutline={true}
+            />
+          </div>
+          
+          {/* Location Info Card */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">{t('propertyDetail.mapView')}</CardTitle>
+              <CardDescription>{property.address}</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {property.lat && property.lng && (
+                <div className="text-sm space-y-1">
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Latitude</span>
+                    <span>{property.lat.toFixed(6)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Longitude</span>
+                    <span>{property.lng.toFixed(6)}</span>
+                  </div>
+                </div>
+              )}
+              
+              <div className="flex flex-col gap-2">
+                <a
+                  href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(property.name + ' ' + property.address)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <Button variant="outline" className="w-full" size="sm">
+                    Open in Google Maps
+                  </Button>
+                </a>
+                <a
+                  href={`https://www.google.com/maps/dir/?api=1&destination=${property.lat},${property.lng}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <Button variant="outline" className="w-full" size="sm">
+                    Get Directions
+                  </Button>
+                </a>
               </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        </div>
 
         {/* Tabs for Transactions and Tenancies */}
         <Tabs defaultValue="transactions" className="w-full">
           <TabsList>
             <TabsTrigger value="transactions">
               <DollarSign className="h-4 w-4 mr-2" />
-              Transactions ({transactions.length})
+              {t('propertyDetail.tabs.transactions')} ({transactions.length})
             </TabsTrigger>
             <TabsTrigger value="tenancies">
               <Users className="h-4 w-4 mr-2" />
-              Tenancies ({tenancies.length})
+              {t('propertyDetail.tabs.tenancies')} ({tenancies.length})
             </TabsTrigger>
           </TabsList>
 
@@ -138,7 +188,7 @@ export default async function PropertyPage({ params }: PropertyPageProps) {
                         <div>
                           <div className="flex items-center gap-2">
                             <Badge variant={transaction.type === 'sale' ? 'default' : 'secondary'}>
-                              {transaction.type === 'sale' ? 'Sale' : 'Lease'}
+                              {transaction.type === 'sale' ? t('propertyDetail.transaction.sale') : t('propertyDetail.transaction.lease')}
                             </Badge>
                             {transaction.tenant_name && (
                               <span className="text-sm">{transaction.tenant_name}</span>
@@ -173,7 +223,7 @@ export default async function PropertyPage({ params }: PropertyPageProps) {
               </div>
             ) : (
               <div className="text-center py-8 text-muted-foreground">
-                No transactions recorded
+                {t('propertyDetail.noTransactions')}
               </div>
             )}
           </TabsContent>
@@ -200,13 +250,13 @@ export default async function PropertyPage({ params }: PropertyPageProps) {
                         <div className="text-right text-sm">
                           {tenancy.lease_start && (
                             <div>
-                              <span className="text-muted-foreground">From: </span>
+                              <span className="text-muted-foreground">{t('propertyDetail.transaction.from')}: </span>
                               {new Date(tenancy.lease_start).toLocaleDateString()}
                             </div>
                           )}
                           {tenancy.lease_end && (
                             <div>
-                              <span className="text-muted-foreground">To: </span>
+                              <span className="text-muted-foreground">{t('propertyDetail.transaction.to')}: </span>
                               {new Date(tenancy.lease_end).toLocaleDateString()}
                             </div>
                           )}
@@ -218,7 +268,7 @@ export default async function PropertyPage({ params }: PropertyPageProps) {
               </div>
             ) : (
               <div className="text-center py-8 text-muted-foreground">
-                No tenancies recorded
+                {t('propertyDetail.noTenancies')}
               </div>
             )}
           </TabsContent>

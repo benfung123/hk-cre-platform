@@ -1,13 +1,18 @@
 'use client'
 
-import Link from 'next/link'
+import { useTranslations } from 'next-intl'
+import { Link } from '@/src/i18n/routing'
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Search, Menu, X, Building2 } from 'lucide-react'
+import { LanguageSwitcher } from '@/components/language-switcher'
+import { usePathname } from '@/src/i18n/routing'
 
 export function Navbar() {
+  const t = useTranslations('nav')
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const pathname = usePathname()
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -15,14 +20,14 @@ export function Navbar() {
         <div className="mr-4 flex">
           <Link href="/" className="mr-6 flex items-center space-x-2">
             <Building2 className="h-6 w-6" />
-            <span className="font-bold">HK CRE</span>
+            <span className="font-bold">{t('home')}</span>
           </Link>
           <nav className="hidden md:flex items-center space-x-6 text-sm font-medium">
             <Link href="/properties" className="transition-colors hover:text-foreground/80">
-              Properties
+              {t('properties')}
             </Link>
             <Link href="/dashboard" className="transition-colors hover:text-foreground/80">
-              Analytics
+              {t('analytics')}
             </Link>
           </nav>
         </div>
@@ -33,7 +38,7 @@ export function Navbar() {
               <Input
                 type="search"
                 name="search"
-                placeholder="Search properties..."
+                placeholder={t('searchPlaceholder')}
                 className="h-8"
               />
               <Button type="submit" size="sm" variant="ghost">
@@ -43,11 +48,12 @@ export function Navbar() {
           </div>
           
           <div className="hidden md:flex items-center space-x-2">
+            <LanguageSwitcher />
             <Link href="/login">
-              <Button variant="ghost" size="sm">Log in</Button>
+              <Button variant="ghost" size="sm">{t('login')}</Button>
             </Link>
             <Link href="/signup">
-              <Button size="sm">Sign up</Button>
+              <Button size="sm">{t('signup')}</Button>
             </Link>
           </div>
           
@@ -67,7 +73,7 @@ export function Navbar() {
               <Input
                 type="search"
                 name="search"
-                placeholder="Search properties..."
+                placeholder={t('searchPlaceholder')}
               />
               <Button type="submit" size="sm">
                 <Search className="h-4 w-4" />
@@ -75,17 +81,20 @@ export function Navbar() {
             </form>
             <nav className="flex flex-col space-y-2">
               <Link href="/properties" className="py-2" onClick={() => setIsMenuOpen(false)}>
-                Properties
+                {t('properties')}
               </Link>
               <Link href="/dashboard" className="py-2" onClick={() => setIsMenuOpen(false)}>
-                Analytics
+                {t('analytics')}
               </Link>
               <hr />
+              <div className="py-2">
+                <LanguageSwitcher />
+              </div>
               <Link href="/login" className="py-2" onClick={() => setIsMenuOpen(false)}>
-                Log in
+                {t('login')}
               </Link>
               <Link href="/signup" className="py-2" onClick={() => setIsMenuOpen(false)}>
-                Sign up
+                {t('signup')}
               </Link>
             </nav>
           </div>

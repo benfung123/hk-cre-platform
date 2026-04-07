@@ -1,0 +1,120 @@
+{
+  "metadata": {
+    "title": "香港商业地产平台 - 商业地产数据",
+    "description": "香港及亚洲商业地产数据平台"
+  },
+  "nav": {
+    "home": "香港商业地产",
+    "properties": "物业",
+    "transactions": "成交",
+    "analytics": "分析",
+    "about": "关于",
+    "contact": "联系",
+    "login": "登录",
+    "signup": "注册",
+    "search": "搜索",
+    "searchPlaceholder": "搜索物业..."
+  },
+  "home": {
+    "hero": {
+      "title": "香港商业地产数据",
+      "subtitle": "全面的商业物业、成交记录及市场分析数据平台，涵盖香港及亚洲地区。",
+      "searchPlaceholder": "搜索大厦名称、地址或租客...",
+      "searchButton": "搜索"
+    },
+    "stats": {
+      "properties": "物业",
+      "avgRent": "平均租金/平方呎",
+      "transactions": "成交",
+      "avgPrice": "平均售价/平方呎"
+    },
+    "featured": {
+      "title": "精选物业",
+      "subtitle": "香港优质商业大厦",
+      "viewAll": "查看全部"
+    },
+    "districts": {
+      "title": "地区概览"
+    },
+    "map": {
+      "title": "地图探索",
+      "subtitle": "浏览香港各区商业物业",
+      "viewFullMap": "查看完整地图"
+    }
+  },
+  "properties": {
+    "page": {
+      "title": "物业",
+      "subtitle": "浏览香港各区商业物业"
+    },
+    "filters": {
+      "allDistricts": "全部地区",
+      "allGrades": "全部级别",
+      "searchPlaceholder": "搜索物业...",
+      "clear": "清除"
+    },
+    "card": {
+      "built": "落成年份",
+      "floors": "层数",
+      "totalArea": "总楼面"
+    },
+    "noResults": {
+      "title": "没有找到物业",
+      "subtitle": "请尝试调整筛选条件"
+    },
+    "view": {
+      "list": "列表",
+      "map": "地图",
+      "split": "分割"
+    }
+  },
+  "propertyDetail": {
+    "back": "返回物业列表",
+    "grade": "级别",
+    "totalFloorArea": "总楼面",
+    "numberOfFloors": "层数",
+    "currentTenants": "现有租客",
+    "mapView": "位置",
+    "tabs": {
+      "transactions": "成交",
+      "tenancies": "租客"
+    },
+    "noTransactions": "没有成交记录",
+    "noTenancies": "没有租客记录",
+    "transaction": {
+      "sale": "买卖",
+      "lease": "租赁",
+      "from": "开始",
+      "to": "结束"
+    },
+    "nearbyMTR": "附近港铁站",
+    "openInGoogleMaps": "在 Google 地图开启",
+    "getDirections": "取得路线"
+  },
+  "districts": {
+    "Central": "中环",
+    "Admiralty": "金钟",
+    "WanChai": "湾仔",
+    "CausewayBay": "铜锣湾",
+    "TsimShaTsui": "尖沙咀",
+    "MongKok": "旺角",
+    "NorthPoint": "北角",
+    "QuarryBay": "鲗鱼涌",
+    "KowloonBay": "九龙湾",
+    "KwunTong": "观塘"
+  },
+  "map": {
+    "mtrStations": "港铁站",
+    "streetView": "街景",
+    "directions": "路线",
+    "viewDetails": "查看详情"
+  },
+  "footer": {
+    "copyright": "© {year} 香港商业地产平台。版权所有。"
+  },
+  "language": {
+    "en": "English",
+    "zh-hk": "繁體中文",
+    "zh-cn": "简体中文"
+  }
+}

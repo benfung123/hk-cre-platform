@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -13,6 +14,7 @@ import { supabase } from '@/lib/supabase/client'
 export const dynamic = 'force-dynamic'
 
 export default function SignupPage() {
+  const t = useTranslations('nav')
   const router = useRouter()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -117,13 +119,13 @@ export default function SignupPage() {
             )}
             
             <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? 'Creating account...' : 'Sign up'}
+              {loading ? 'Creating account...' : t('signup')}
             </Button>
           </form>
 
           <div className="mt-4 text-center text-sm">
             Already have an account?{' '}
-            <Link href="/login" className="underline">Log in</Link>
+            <Link href="/login" className="underline">{t('login')}</Link>
           </div>
         </CardContent>
       </Card>
