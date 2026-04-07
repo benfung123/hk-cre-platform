@@ -17,7 +17,7 @@ import {
 } from 'lucide-react'
 import { MAP_CONFIG, DISTRICT_CENTERS, MTR_STATIONS } from '@/lib/map-config'
 import type { Property } from '@/types'
-import { useTranslations } from 'next-intl'
+import { useTranslations, useLocale } from 'next-intl'
 
 interface BuildingMapProps {
   properties: Property[]
@@ -37,6 +37,7 @@ export function BuildingMap({
   showSearch = true
 }: BuildingMapProps) {
   const t = useTranslations()
+  const locale = useLocale()
   const mapContainerRef = useRef<HTMLDivElement>(null)
   const mapRef = useRef<any>(null)
   const [mapInstance, setMapInstance] = useState<any>(null)
@@ -186,7 +187,7 @@ export function BuildingMap({
               <span style="font-size: 12px; color: #6b7280;">${property.district}</span>
             </div>
             ${property.total_sqft ? `<p style="font-size: 12px;">${(property.total_sqft / 1000000).toFixed(1)}M sqft</p>` : ''}
-            <a href="/properties/${property.id}" style="font-size: 12px; color: #3b82f6; text-decoration: none; margin-top: 8px; display: block;">View Details →</a>
+            <a href="/${locale}/properties/${property.id}" style="font-size: 12px; color: #3b82f6; text-decoration: none; margin-top: 8px; display: block;">View Details →</a>
           </div>
         `
         infoWindow.setContent(content)
@@ -195,7 +196,7 @@ export function BuildingMap({
     }
     
     onPropertySelect?.(property)
-  }, [mapInstance, infoWindow, onPropertySelect])
+  }, [mapInstance, infoWindow, onPropertySelect, locale])
 
   // Update property markers
   useEffect(() => {
