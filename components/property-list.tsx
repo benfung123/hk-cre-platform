@@ -1,7 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { useSearchParams } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -29,7 +30,16 @@ type ViewMode = 'list' | 'map' | 'split'
 
 export function PropertyList({ properties }: PropertyListProps) {
   const t = useTranslations()
+  const searchParams = useSearchParams()
   const [viewMode, setViewMode] = useState<ViewMode>('list')
+  
+  // Read view from URL on mount
+  useEffect(() => {
+    const view = searchParams.get('view')
+    if (view === 'map' || view === 'split' || view === 'list') {
+      setViewMode(view)
+    }
+  }, [searchParams])
   const [searchQuery, setSearchQuery] = useState('')
   const [showFilters, setShowFilters] = useState(false)
 
