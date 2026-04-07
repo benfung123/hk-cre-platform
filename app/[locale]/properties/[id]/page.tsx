@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation'
 import { getTranslations } from 'next-intl/server'
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -22,6 +23,37 @@ interface PropertyPageProps {
 // Force dynamic rendering since we need database access
 export const dynamic = 'force-dynamic'
 
+export async function generateMetadata({ params }: PropertyPageProps): Promise<Metadata> {
+  const { id } = await params
+  const t = await getTranslations()
+  const property = await getPropertyById(id)
+  
+  if (!property) {
+    return {
+      title: t('propertyDetail.notFound'),
+    }
+  }
+  
+  const baseUrl = 'https://hk-cre-platform.vercel.app'
+  
+  return {
+    title: property.name,
+    description: `${property.name} - ${property.grade} Grade Office Building in ${property.district}. ${property.total_sqft ? (property.total_sqft / 1000000).toFixed(2) + 'M sqft' : ''}`,
+    keywords: ['香港寫字樓', '商業地產', property.name, property.district, property.grade],
+    metadataBase: new URL(baseUrl),
+    alternates: {
+      canonical: `/properties/${property.id}`,
+    },
+    openGraph: {
+      type: 'website',
+      url: `${baseUrl}/properties/${property.id}`,
+      title: property.name,
+      description: `${property.name} - ${property.grade} Grade Office Building in ${property.district}`,
+      siteName: 'HK CRE Platform',
+    },
+  }
+}
+
 export default async function PropertyPage({ params }: PropertyPageProps) {
   const { id } = await params
   const t = await getTranslations()
@@ -42,7 +74,34 @@ export default async function PropertyPage({ params }: PropertyPageProps) {
     return t(`districts.${districtKey}`) || district
   }
 
+  // Generate JSON-LD structured data
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'RealEstateListing',
+    name: property.name,
+    description: `${property.name} - ${property.grade} Grade Office Building`,
+    address: {
+      '@type': 'PostalAddress',
+      streetAddress: property.address,
+      addressLocality: property.district,
+      addressCountry: 'HK',
+    },
+    floorSize: property.total_sqft ? {
+      '@type': 'QuantitativeValue',
+      value: property.total_sqft,
+      unitCode: 'FTK',
+    } : undefined,
+    yearBuilt: property.year_built || undefined,
+    url: `https://hk-cre-platform.vercel.app/properties/${property.id}`,
+    dateModified: property.updated_at || new Date().toISOString(),
+  }
+
   return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
     <div className="container py-8">
       <div className="flex flex-col gap-8">
         {/* Back Button */}
@@ -294,6 +353,6 @@ export default async function PropertyPage({ params }: PropertyPageProps) {
           </TabsContent>
         </Tabs>
       </div>
-    </div>
+    </>
   )
 }

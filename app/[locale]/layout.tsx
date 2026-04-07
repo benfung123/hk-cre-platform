@@ -4,6 +4,8 @@ import { notFound } from 'next/navigation';
 import { NextIntlClientProvider } from 'next-intl';
 import { getMessages, getTranslations } from 'next-intl/server';
 import { routing } from '@/src/i18n/routing';
+import { Analytics } from '@vercel/analytics/react';
+import { SpeedInsights } from '@vercel/speed-insights/next';
 import "../globals.css";
 import { Navbar } from "@/components/navbar";
 
@@ -21,9 +23,65 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   const { locale } = await params;
   const t = await getTranslations({ locale });
   
+  const baseUrl = 'https://hk-cre-platform.vercel.app';
+  
   return {
-    title: t('metadata.title'),
+    title: {
+      template: `%s | ${t('metadata.title')}`,
+      default: t('metadata.title'),
+    },
     description: t('metadata.description'),
+    keywords: ['香港商業地產', '寫字樓', '租金', '成交', '地產數據', 'HK Commercial Real Estate', 'Office Rental', 'Property Data'],
+    authors: [{ name: 'HK CRE Platform' }],
+    creator: 'HK CRE Platform',
+    publisher: 'HK CRE Platform',
+    metadataBase: new URL(baseUrl),
+    alternates: {
+      canonical: `/${locale}`,
+      languages: {
+        'en-HK': '/en',
+        'zh-HK': '/zh-hk',
+        'zh-CN': '/zh-cn',
+      },
+    },
+    openGraph: {
+      type: 'website',
+      locale: locale === 'en' ? 'en_HK' : locale === 'zh-hk' ? 'zh_HK' : 'zh_CN',
+      alternateLocale: ['en_HK', 'zh_HK', 'zh_CN'],
+      url: baseUrl,
+      siteName: t('metadata.title'),
+      title: t('metadata.title'),
+      description: t('metadata.description'),
+      images: [
+        {
+          url: '/og-image.png',
+          width: 1200,
+          height: 630,
+          alt: t('metadata.title'),
+        },
+      ],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: t('metadata.title'),
+      description: t('metadata.description'),
+      images: ['/og-image.png'],
+      creator: '@hkcreplatform',
+    },
+    robots: {
+      index: true,
+      follow: true,
+      googleBot: {
+        index: true,
+        follow: true,
+        'max-video-preview': -1,
+        'max-image-preview': 'large',
+        'max-snippet': -1,
+      },
+    },
+    verification: {
+      google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION,
+    },
   };
 }
 
@@ -58,6 +116,8 @@ export default async function RootLayout({
             </div>
           </footer>
         </NextIntlClientProvider>
+        <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );
