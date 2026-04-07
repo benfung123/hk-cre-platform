@@ -220,7 +220,7 @@ export function buildingToGeoJSON(building: CSDIBuilding): GeoJSON.Feature {
   return {
     type: 'Feature',
     id: building.id,
-    geometry: building.geometry,
+    geometry: building.geometry as GeoJSON.Geometry,
     properties: {
       name: building.name,
       nameEn: building.nameEn,

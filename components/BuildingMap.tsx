@@ -10,7 +10,7 @@ import Map, {
   Source,
   Layer,
   type MapRef
-} from 'react-map-gl'
+} from 'react-map-gl/mapbox'
 import 'mapbox-gl/dist/mapbox-gl.css'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'

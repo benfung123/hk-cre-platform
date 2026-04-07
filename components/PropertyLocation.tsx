@@ -1,5 +1,6 @@
 'use client'
 
+import type { GeoJSON } from 'geojson'
 import { useState, useEffect, useMemo } from 'react'
 import Map, { 
   Marker, 
@@ -8,7 +9,7 @@ import Map, {
   Source,
   Layer,
   type MapRef
-} from 'react-map-gl'
+} from 'react-map-gl/mapbox'
 import 'mapbox-gl/dist/mapbox-gl.css'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -70,14 +71,17 @@ export function PropertyLocation({
   const nearbyStations: NearbyStation[] = useMemo(() => {
     if (!property.lat || !property.lng || !showNearbyMTR) return []
     
+    const propLat = property.lat
+    const propLng = property.lng
+    
     return MTR_STATIONS
       .map(station => {
         // Calculate distance using Haversine formula
         const R = 6371000 // Earth's radius in meters
-        const dLat = (station.lat - property.lat) * Math.PI / 180
-        const dLng = (station.lng - property.lng) * Math.PI / 180
+        const dLat = (station.lat - propLat) * Math.PI / 180
+        const dLng = (station.lng - propLng) * Math.PI / 180
         const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-                  Math.cos(property.lat * Math.PI / 180) * 
+                  Math.cos(propLat * Math.PI / 180) * 
                   Math.cos(station.lat * Math.PI / 180) *
                   Math.sin(dLng/2) * Math.sin(dLng/2)
         const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a))
@@ -99,17 +103,19 @@ export function PropertyLocation({
   const buildingGeoJSON = useMemo(() => {
     if (!buildingData?.geometry) return null
     
+    const geometry = buildingData.geometry as GeoJSON.Geometry
+    
     return {
       type: 'FeatureCollection' as const,
       features: [{
         type: 'Feature' as const,
-        geometry: buildingData.geometry,
+        geometry: geometry,
         properties: {
           name: buildingData.name || property.name,
           height: buildingData.properties.buildingHeight
         }
       }]
-    }
+    } as GeoJSON.FeatureCollection
   }, [buildingData, property.name])
 
   // Map initial view
