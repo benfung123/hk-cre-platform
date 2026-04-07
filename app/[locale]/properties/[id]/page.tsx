@@ -6,9 +6,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Separator } from '@/components/ui/separator'
-import { ArrowLeft, MapPin, Calendar, DollarSign, Users } from 'lucide-react'
+import { ArrowLeft, MapPin, Calendar, DollarSign, Users, Heart } from 'lucide-react'
 import { getPropertyById, getPropertyTransactions, getPropertyTenancies } from '@/lib/data'
 import { PropertyLocation } from '@/components/PropertyLocation'
+import { PriceHistoryChart } from '@/components/charts/price-history-chart'
+import { SourceBadge } from '@/components/data-source/source-badge'
+import { FavoriteButton } from '@/components/favorites/favorite-button'
 
 interface PropertyPageProps {
   params: Promise<{
@@ -53,11 +56,21 @@ export default async function PropertyPage({ params }: PropertyPageProps) {
         {/* Property Header */}
         <div className="space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-            <div>
+            <div className="flex-1">
               <h1 className="text-3xl font-bold">{property.name}</h1>
               <p className="text-lg text-muted-foreground">{property.address}</p>
+              <div className="flex items-center gap-2 mt-2">
+                <SourceBadge 
+                  source="rvd"
+                  lastUpdated={property.updated_at}
+                  reliability="high"
+                />
+              </div>
             </div>
-            <Badge className="text-lg px-4 py-1">{t('propertyDetail.grade')} {property.grade}</Badge>
+            <div className="flex items-center gap-2">
+              <FavoriteButton propertyId={property.id} showLabel />
+              <Badge className="text-lg px-4 py-1">{t('propertyDetail.grade')} {property.grade}</Badge>
+            </div>
           </div>
 
           <div className="flex flex-wrap gap-4">
@@ -109,6 +122,13 @@ export default async function PropertyPage({ params }: PropertyPageProps) {
             </CardContent>
           </Card>
         </div>
+
+        {/* Price History Chart */}
+        <PriceHistoryChart 
+          transactions={transactions}
+          title="Rental Price History"
+          description="Historical rental rates per square foot"
+        />
 
         {/* Map Section */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

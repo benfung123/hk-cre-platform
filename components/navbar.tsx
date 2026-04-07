@@ -5,7 +5,7 @@ import { Link } from '@/src/i18n/routing'
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Search, Menu, X, Building2 } from 'lucide-react'
+import { Search, Menu, X, Building2, Heart, Scale } from 'lucide-react'
 import { LanguageSwitcher } from '@/components/language-switcher'
 import { usePathname } from '@/src/i18n/routing'
 
@@ -25,6 +25,18 @@ export function Navbar() {
           <nav className="hidden md:flex items-center space-x-6 text-sm font-medium">
             <Link href="/properties" className="transition-colors hover:text-foreground/80">
               {t('properties')}
+            </Link>
+            <Link href="/favorites" className="transition-colors hover:text-foreground/80">
+              <span className="flex items-center gap-1">
+                <Heart className="h-4 w-4" />
+                Watchlist
+              </span>
+            </Link>
+            <Link href="/compare" className="transition-colors hover:text-foreground/80">
+              <span className="flex items-center gap-1">
+                <Scale className="h-4 w-4" />
+                Compare
+              </span>
             </Link>
             <Link href="/dashboard" className="transition-colors hover:text-foreground/80">
               {t('analytics')}
@@ -82,6 +94,18 @@ export function Navbar() {
             <nav className="flex flex-col space-y-2">
               <Link href="/properties" className="py-2" onClick={() => setIsMenuOpen(false)}>
                 {t('properties')}
+              </Link>
+              <Link href="/favorites" className="py-2" onClick={() => setIsMenuOpen(false)}>
+                <span className="flex items-center gap-2">
+                  <Heart className="h-4 w-4" />
+                  Watchlist
+                </span>
+              </Link>
+              <Link href="/compare" className="py-2" onClick={() => setIsMenuOpen(false)}>
+                <span className="flex items-center gap-2">
+                  <Scale className="h-4 w-4" />
+                  Compare
+                </span>
               </Link>
               <Link href="/dashboard" className="py-2" onClick={() => setIsMenuOpen(false)}>
                 {t('analytics')}

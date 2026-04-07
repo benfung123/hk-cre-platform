@@ -16,11 +16,17 @@ import {
   Search,
   X,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  Heart,
+  Scale
 } from 'lucide-react'
 import { BuildingMap } from '@/components/BuildingMap'
 import type { Property } from '@/types'
 import { useTranslations } from 'next-intl'
+import { FavoriteButton } from '@/components/favorites/favorite-button'
+import { CompareButton } from '@/components/comparison/compare-button'
+import { ComparisonBar } from '@/components/comparison/comparison-bar'
+import { SourceBadge } from '@/components/data-source/source-badge'
 
 interface PropertyListProps {
   properties: Property[]
@@ -40,6 +46,7 @@ export function PropertyList({ properties }: PropertyListProps) {
       setViewMode(view)
     }
   }, [searchParams])
+  
   const [searchQuery, setSearchQuery] = useState('')
   const [showFilters, setShowFilters] = useState(false)
 
@@ -195,40 +202,58 @@ export function PropertyList({ properties }: PropertyListProps) {
       {viewMode === 'list' && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredProperties.map((property) => (
-            <Link key={property.id} href={`/properties/${property.id}`}>
-              <Card className="h-full hover:shadow-lg transition-shadow">
-                <CardHeader>
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <CardTitle className="line-clamp-1">{property.name}</CardTitle>
-                      <CardDescription className="line-clamp-1">
-                        {property.address}
-                      </CardDescription>
+            <div key={property.id} className="relative group">
+              <Link href={`/properties/${property.id}`}>
+                <Card className="h-full hover:shadow-lg transition-shadow">
+                  <CardHeader>
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1 min-w-0 pr-2">
+                        <CardTitle className="line-clamp-1">{property.name}</CardTitle>
+                        <CardDescription className="line-clamp-1">
+                          {property.address}
+                        </CardDescription>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <SourceBadge 
+                          source="rvd" 
+                          lastUpdated={property.updated_at}
+                          reliability="high"
+                          className="hidden sm:inline-flex"
+                        />
+                        <Badge>{property.grade}</Badge>
+                      </div>
                     </div>
-                    <Badge>{property.grade}</Badge>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                    <div className="flex items-center">
-                      <MapPin className="h-4 w-4 mr-1" />
-                      {getDistrictTranslation(property.district)}
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                      <div className="flex items-center">
+                        <MapPin className="h-4 w-4 mr-1" />
+                        {getDistrictTranslation(property.district)}
+                      </div>
+                      {property.year_built && (
+                        <div>Built {property.year_built}</div>
+                      )}
                     </div>
-                    {property.year_built && (
-                      <div>{t('properties.card.built')} {property.year_built}</div>
+                    {property.total_sqft && (
+                      <div className="mt-2 text-sm">
+                        {(property.total_sqft / 1000000).toFixed(1)}M {t('properties.card.totalArea')}
+                      </div>
                     )}
-                  </div>
-                  {property.total_sqft && (
-                    <div className="mt-2 text-sm">
-                      {(property.total_sqft / 1000000).toFixed(1)}M {t('properties.card.totalArea')}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </Link>
+                  </CardContent>
+                </Card>
+              </Link>
+              
+              {/* Action Buttons */}
+              <div className="absolute top-2 right-2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                <CompareButton propertyId={property.id} size="sm" />
+                <FavoriteButton propertyId={property.id} size="sm" />
+              </div>
+            </div>
           ))}
         </div>
       )}
+
+      <ComparisonBar />
     </div>
   )
 }
