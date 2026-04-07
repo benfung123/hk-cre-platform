@@ -11,7 +11,7 @@ import { ArrowLeft, MapPin, Calendar, DollarSign, Users, Heart } from 'lucide-re
 import { getPropertyById, getPropertyTransactions, getPropertyTenancies } from '@/lib/data'
 import { PropertyLocation } from '@/components/PropertyLocation'
 import { PriceHistoryChart } from '@/components/charts/price-history-chart'
-import { SourceBadge } from '@/components/data-source/source-badge'
+import { SourceBadge, DataFreshnessIndicator, DataProvenanceDrawer } from '@/components/data-source'
 import { FavoriteButton } from '@/components/favorites/favorite-button'
 
 interface PropertyPageProps {
@@ -123,6 +123,28 @@ export default async function PropertyPage({ params }: PropertyPageProps) {
                   source="rvd"
                   lastUpdated={property.updated_at}
                   reliability="high"
+                />
+                <DataFreshnessIndicator 
+                  lastUpdated={property.updated_at}
+                  showLabel={false}
+                />
+                <DataProvenanceDrawer 
+                  dataSources={[
+                    {
+                      source: 'rvd',
+                      lastUpdated: property.updated_at,
+                      reliability: 'high',
+                      fieldName: 'Property Information',
+                      methodology: 'Data sourced from RVD rental statistics and property records.'
+                    },
+                    {
+                      source: 'csdi',
+                      lastUpdated: property.updated_at,
+                      reliability: 'high',
+                      fieldName: 'Location & Spatial Data',
+                      methodology: 'Geographic coordinates and building footprint from CSDI.'
+                    }
+                  ]}
                 />
               </div>
             </div>
@@ -353,6 +375,7 @@ export default async function PropertyPage({ params }: PropertyPageProps) {
           </TabsContent>
         </Tabs>
       </div>
+    </div>
     </>
   )
 }

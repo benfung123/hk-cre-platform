@@ -26,7 +26,8 @@ import { useTranslations } from 'next-intl'
 import { FavoriteButton } from '@/components/favorites/favorite-button'
 import { CompareButton } from '@/components/comparison/compare-button'
 import { ComparisonBar } from '@/components/comparison/comparison-bar'
-import { SourceBadge } from '@/components/data-source/source-badge'
+import { SourceBadge } from '@/components/data-source'
+import { EmptyState } from '@/components/empty-state'
 
 interface PropertyListProps {
   properties: Property[]
@@ -146,6 +147,11 @@ export function PropertyList({ properties }: PropertyListProps) {
         Showing <span className="font-medium">{filteredProperties.length}</span> of{' '}
         <span className="font-medium">{properties.length}</span> properties
       </p>
+
+      {/* Empty State */}
+      {filteredProperties.length === 0 && (
+        <EmptyState />
+      )}
 
       {/* Content based on view mode */}
       {viewMode === 'map' && (

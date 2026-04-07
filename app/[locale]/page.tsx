@@ -29,8 +29,18 @@ export default async function HomePage() {
   return (
     <div className="flex flex-col">
       {/* Hero Section */}
-      <section className="relative py-20 lg:py-32 bg-gradient-to-b from-muted/50 to-background">
-        <div className="container flex flex-col items-center text-center space-y-8">
+      <section className="relative py-20 lg:py-32 bg-gradient-to-b from-muted/50 to-background overflow-hidden">
+        {/* Background Hero Image */}
+        <div className="absolute inset-0 z-0">
+          <img
+            src="/og-image.png"
+            alt="HK Commercial Real Estate"
+            className="w-full h-full object-cover opacity-20"
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-background/80 via-background/50 to-background" />
+        </div>
+        
+        <div className="container relative z-10 flex flex-col items-center text-center space-y-8">
           <div className="space-y-4 max-w-3xl">
             <h1 className="text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl">
               {t('home.hero.title')}

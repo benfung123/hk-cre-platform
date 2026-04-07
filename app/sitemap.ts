@@ -12,11 +12,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   const routes = ['', '/properties'];
   
-  const staticEntries = locales.flatMap(locale =>
+  const staticEntries: MetadataRoute.Sitemap = locales.flatMap(locale =>
     routes.map(route => ({
       url: `${baseUrl}/${locale}${route}`,
       lastModified: new Date(),
-      changeFrequency: (route === '' ? 'weekly' : 'monthly') as const,
+      changeFrequency: (route === '' ? 'weekly' : 'monthly') as 'weekly' | 'monthly',
       priority: route === '' ? 1 : 0.8,
       alternates: {
         languages: Object.fromEntries(
