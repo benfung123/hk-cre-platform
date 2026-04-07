@@ -4,6 +4,14 @@ import {routing} from './src/i18n/routing';
 export default createMiddleware(routing);
  
 export const config = {
-  // Match only internationalized pathnames
-  matcher: ['/', '/(zh-hk|zh-cn|en)/:path*']
+  // Match all pathnames except for specific exclusions
+  matcher: [
+    '/', 
+    '/(zh-hk|zh-cn|en)/:path*',
+    '/properties/:path*',
+    '/dashboard/:path*',
+    '/login',
+    '/signup',
+    '/((?!api|_next|_vercel|.*\\..*).*)'
+  ]
 };
