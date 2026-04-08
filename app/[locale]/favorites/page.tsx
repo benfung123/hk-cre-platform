@@ -22,7 +22,7 @@ import {
 import { useFavorites } from '@/hooks/use-favorites'
 import type { Property } from '@/types'
 import { FavoriteButton } from '@/components/favorites/favorite-button'
-import { RecentlyViewed } from '@/components/favorites/recently-viewed'
+import { HomeRecentlyViewed } from '@/components/favorites/home-recently-viewed'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useTranslations } from 'next-intl'
 import { useCompare } from '@/hooks/use-compare'
@@ -54,14 +54,19 @@ export default function FavoritesPage() {
   // Load favorites data
   useEffect(() => {
     async function loadProperties() {
-      if (!isLoaded) return
+      if (!isLoaded) {
+        console.log('[FavoritesPage] Waiting for favorites to load...')
+        return
+      }
       
+      console.log('[FavoritesPage] Loading properties, favorites:', favorites)
       setLoading(true)
       try {
         const loaded = await getFavorites()
+        console.log('[FavoritesPage] Loaded properties:', loaded)
         setProperties(loaded)
       } catch (e) {
-        console.error('Failed to load favorites:', e)
+        console.error('[FavoritesPage] Failed to load favorites:', e)
       } finally {
         setLoading(false)
       }
@@ -100,6 +105,7 @@ export default function FavoritesPage() {
     setShowCompareMode(false)
   }
 
+  // Show loading skeleton while data is loading
   if (!isLoaded || loading) {
     return <FavoritesSkeleton />
   }
@@ -216,11 +222,7 @@ export default function FavoritesPage() {
 
         {/* Recently Viewed Section */}
         <div className="pt-8 border-t">
-          <RecentlyViewed 
-            layout="grid"
-            limit={4}
-            excludeIds={favorites}
-          />
+          <HomeRecentlyViewed />
         </div>
       </div>
     </div>
