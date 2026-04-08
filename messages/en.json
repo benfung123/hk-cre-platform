@@ -50,6 +50,7 @@
     "filters": {
       "allDistricts": "All Districts",
       "allGrades": "All Grades",
+      "byGrade": "{count} total",
       "searchPlaceholder": "Search properties...",
       "clear": "Clear"
     },

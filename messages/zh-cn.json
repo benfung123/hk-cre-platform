@@ -50,6 +50,7 @@
     "filters": {
       "allDistricts": "全部地区",
       "allGrades": "全部级别",
+      "byGrade": "共 {count} 个",
       "searchPlaceholder": "搜索物业...",
       "clear": "清除"
     },

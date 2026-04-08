@@ -50,6 +50,7 @@
     "filters": {
       "allDistricts": "全部地區",
       "allGrades": "全部級別",
+      "byGrade": "共 {count} 個",
       "searchPlaceholder": "搜索物業...",
       "clear": "清除"
     },
