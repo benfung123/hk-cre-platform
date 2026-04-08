@@ -9,6 +9,7 @@ export interface Property {
   floors: number | null;
   lat: number | null;
   lng: number | null;
+  data_type?: 'individual' | 'aggregate';
   created_at: string;
   updated_at: string;
 }

@@ -2,8 +2,9 @@ import { Suspense } from 'react'
 import { getLocale, getTranslations } from 'next-intl/server'
 import { PropertyList } from '@/components/property-list'
 import { PropertyFilters } from '@/components/property-filters'
+import { GradeDistribution } from '@/components/grade-distribution'
 import { Skeleton } from '@/components/ui/skeleton'
-import { getProperties, getDistricts } from '@/lib/data'
+import { getProperties, getDistricts, getGradeDistribution } from '@/lib/data'
 import { DataFreshnessIndicator } from '@/components/data-source'
 import { Database, Info } from 'lucide-react'
 import {
@@ -28,13 +29,14 @@ export default async function PropertiesPage({ searchParams }: PropertiesPagePro
   const params = await searchParams
   const t = await getTranslations()
   
-  const [properties, districts] = await Promise.all([
+  const [properties, districts, gradeDistribution] = await Promise.all([
     getProperties({
       district: params.district,
       grade: params.grade,
       search: params.search
     }),
-    getDistricts()
+    getDistricts(),
+    getGradeDistribution()
   ])
 
   // Get the most recent update date from properties
@@ -106,6 +108,9 @@ export default async function PropertiesPage({ searchParams }: PropertiesPagePro
       <div className="container py-8">
         <div className="flex flex-col gap-8">
           <PropertyFilters districts={districts} />
+          
+          {/* Grade Distribution */}
+          <GradeDistribution grades={gradeDistribution} />
 
           <Suspense fallback={<PropertyListSkeleton />}>
             <PropertyList properties={properties} />

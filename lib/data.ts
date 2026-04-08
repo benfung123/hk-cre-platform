@@ -5,6 +5,7 @@ export async function getProperties(filters?: {
   district?: string
   grade?: string
   search?: string
+  includeAggregates?: boolean
 }): Promise<Property[]> {
   const supabase = await createClient()
   
@@ -12,6 +13,12 @@ export async function getProperties(filters?: {
     .from('properties')
     .select('*')
     .order('name')
+
+  // By default, filter out aggregate/district-average properties
+  // Only show individual buildings with real names
+  if (!filters?.includeAggregates) {
+    query = query.or('data_type.eq.individual,data_type.is.null')
+  }
 
   if (filters?.district) {
     query = query.eq('district', filters.district)
@@ -33,6 +40,30 @@ export async function getProperties(filters?: {
   }
 
   return data || []
+}
+
+export async function getGradeDistribution(): Promise<{ grade: string; count: number }[]> {
+  const supabase = await createClient()
+  
+  const { data, error } = await supabase
+    .from('properties')
+    .select('grade')
+    .or('data_type.eq.individual,data_type.is.null')
+
+  if (error) {
+    console.error('Error fetching grade distribution:', error)
+    return []
+  }
+
+  const distribution = data?.reduce((acc, curr) => {
+    const grade = curr.grade || 'Unknown'
+    acc[grade] = (acc[grade] || 0) + 1
+    return acc
+  }, {} as Record<string, number>)
+
+  return Object.entries(distribution || {})
+    .map(([grade, count]) => ({ grade, count }))
+    .sort((a, b) => b.count - a.count)
 }
 
 export async function getPropertyById(id: string): Promise<Property | null> {
@@ -92,6 +123,7 @@ export async function getDistricts(): Promise<string[]> {
   const { data, error } = await supabase
     .from('properties')
     .select('district')
+    .or('data_type.eq.individual,data_type.is.null')
 
   if (error) {
     console.error('Error fetching districts:', error)
