@@ -146,13 +146,45 @@
     "trackingCount": "You're tracking {count} {count, plural, one {property} other {properties}}",
     "exploreMore": "Explore More",
     "browseAll": "Browse all properties →"
-  }
-}
-} other {properties}} saved",
-    "emptyTitle": "No Saved Properties",
-    "emptyDescription": "Save properties to your watchlist to track them and compare options.",
-    "browseButton": "Browse Properties",
-    "save": "Save",
-    "saved": "Saved"
+  },
+  "analytics": {
+    "page": {
+      "subtitle": "Comprehensive market analytics and insights for Hong Kong commercial real estate"
+    },
+    "metrics": {
+      "totalProperties": "Total Properties",
+      "avgRent": "Avg Rent/sqft",
+      "avgPrice": "Avg Price/sqft",
+      "totalTransactions": "Total Transactions"
+    },
+    "gradeAnalysis": {
+      "title": "Rent by Grade",
+      "description": "Average rent and property count comparison across building grades",
+      "properties": "Properties",
+      "avgRent": "Avg Rent",
+      "avgPrice": "Avg Price",
+      "propertyCount": "Property Count",
+      "avgRentPerSqft": "Avg Rent/sqft",
+      "grade": "Grade"
+    },
+    "districtAnalysis": {
+      "title": "District Comparison",
+      "description": "Property distribution and pricing across Hong Kong districts",
+      "district": "District",
+      "properties": "Properties",
+      "avgRent": "Avg Rent/sqft",
+      "avgPrice": "Avg Price/sqft",
+      "totalDistricts": "Total {count} districts"
+    },
+    "trendAnalysis": {
+      "title": "Market Trends (12 Months)",
+      "description": "Rent trends and transaction volume over the past year",
+      "avgRent": "Avg Rent",
+      "transactions": "Transactions"
+    },
+    "topDistricts": {
+      "title": "Top 5 Districts"
+    },
+    "properties": "properties"
   }
 }

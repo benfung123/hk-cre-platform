@@ -160,5 +160,45 @@
     "trackingCount": "正在追踪 {count} 个物业",
     "exploreMore": "探索更多",
     "browseAll": "浏览全部物业 →"
+  },
+  "analytics": {
+    "page": {
+      "subtitle": "香港商业地产全面市场分析及洞察"
+    },
+    "metrics": {
+      "totalProperties": "物业总数",
+      "avgRent": "平均租金/平方呎",
+      "avgPrice": "平均售价/平方呎",
+      "totalTransactions": "成交总数"
+    },
+    "gradeAnalysis": {
+      "title": "各级别租金分析",
+      "description": "比较各级别大厦的平均租金及物业数量",
+      "properties": "物业数量",
+      "avgRent": "平均租金",
+      "avgPrice": "平均售价",
+      "propertyCount": "物业数量",
+      "avgRentPerSqft": "平均租金/平方呎",
+      "grade": "级别"
+    },
+    "districtAnalysis": {
+      "title": "地区比较",
+      "description": "香港各区物业分布及价格分析",
+      "district": "地区",
+      "properties": "物业数量",
+      "avgRent": "平均租金/平方呎",
+      "avgPrice": "平均售价/平方呎",
+      "totalDistricts": "共 {count} 个地区"
+    },
+    "trendAnalysis": {
+      "title": "市场趋势（12个月）",
+      "description": "过去一年租金走势及成交量",
+      "avgRent": "平均租金",
+      "transactions": "成交数量"
+    },
+    "topDistricts": {
+      "title": "前5大地区"
+    },
+    "properties": "个物业"
   }
 }

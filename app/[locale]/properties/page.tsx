@@ -29,8 +29,6 @@ export default async function PropertiesPage({ searchParams }: PropertiesPagePro
   const params = await searchParams
   const t = await getTranslations()
   
-  console.log('[PropertiesPage] searchParams received:', JSON.stringify(params))
-  
   const [properties, districts, gradeDistribution] = await Promise.all([
     getProperties({
       district: params.district,
@@ -40,8 +38,6 @@ export default async function PropertiesPage({ searchParams }: PropertiesPagePro
     getDistricts(),
     getGradeDistribution()
   ])
-  
-  console.log('[PropertiesPage] Properties count:', properties.length)
 
   // Get the most recent update date from properties
   const mostRecentUpdate = properties.length > 0 

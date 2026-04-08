@@ -7,8 +7,6 @@ export async function getProperties(filters?: {
   search?: string
   includeAggregates?: boolean
 }): Promise<Property[]> {
-  console.log('[getProperties] Called with filters:', JSON.stringify(filters))
-  
   const supabase = await createClient()
   
   let query = supabase
@@ -22,12 +20,10 @@ export async function getProperties(filters?: {
   // }
 
   if (filters?.district) {
-    console.log('[getProperties] Applying district filter:', filters.district)
     query = query.eq('district', filters.district)
   }
 
   if (filters?.grade) {
-    console.log('[getProperties] Applying grade filter:', filters.grade)
     query = query.eq('grade', filters.grade)
     // Grades only apply to office buildings - exclude retail/industrial
     query = query
@@ -39,13 +35,10 @@ export async function getProperties(filters?: {
   }
 
   if (filters?.search) {
-    console.log('[getProperties] Applying search filter:', filters.search)
     query = query.or(`name.ilike.%${filters.search}%,address.ilike.%${filters.search}%`)
   }
 
-  const { data, error, count } = await query
-
-  console.log('[getProperties] Query result:', { count: data?.length, error: error?.message })
+  const { data, error } = await query
 
   if (error) {
     console.error('Error fetching properties:', error)
