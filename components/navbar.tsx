@@ -5,7 +5,7 @@ import { Link } from '@/src/i18n/routing'
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Search, Menu, X, Building2, Heart, Scale } from 'lucide-react'
+import { Search, Menu, X, Building2 } from 'lucide-react'
 import { LanguageSwitcher } from '@/components/language-switcher'
 import { usePathname } from '@/src/i18n/routing'
 
@@ -27,17 +27,10 @@ export function Navbar() {
               {t('properties')}
             </Link>
             <Link href="/favorites" className="transition-colors hover:text-foreground/80">
-              <span className="flex items-center gap-1">
-                <Heart className="h-4 w-4" />
-                Watchlist
-              </span>
+              {t('favorites')}
             </Link>
             <Link href="/compare" className="transition-colors hover:text-foreground/80">
-              <span className="flex items-center gap-1">
-                <Scale className="h-4 w-4" />
-                Compare
-              </span>
-            </Link>
+              {t('compare')}
             <Link href="/dashboard" className="transition-colors hover:text-foreground/80">
               {t('analytics')}
             </Link>
@@ -96,17 +89,10 @@ export function Navbar() {
                 {t('properties')}
               </Link>
               <Link href="/favorites" className="py-2" onClick={() => setIsMenuOpen(false)}>
-                <span className="flex items-center gap-2">
-                  <Heart className="h-4 w-4" />
-                  Watchlist
-                </span>
+                {t('favorites')}
               </Link>
               <Link href="/compare" className="py-2" onClick={() => setIsMenuOpen(false)}>
-                <span className="flex items-center gap-2">
-                  <Scale className="h-4 w-4" />
-                  Compare
-                </span>
-              </Link>
+                {t('compare')}
               <Link href="/dashboard" className="py-2" onClick={() => setIsMenuOpen(false)}>
                 {t('analytics')}
               </Link>
