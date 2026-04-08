@@ -25,28 +25,6 @@ interface PropertyFiltersProps {
   hasResults?: boolean
 }
 
-// All 18 Hong Kong districts with data availability
-const ALL_DISTRICTS = [
-  { name: 'Central', hasData: true },
-  { name: 'Causeway Bay', hasData: true },
-  { name: 'Sheung Wan', hasData: true },
-  { name: 'Tsim Sha Tsui', hasData: true },
-  { name: 'Mong Kok', hasData: true },
-  { name: 'Quarry Bay', hasData: true },
-  { name: 'Kwun Tong', hasData: true },
-  { name: 'Admiralty', hasData: false },
-  { name: 'Wan Chai', hasData: false },
-  { name: 'Yau Ma Tei', hasData: false },
-  { name: 'North Point', hasData: false },
-  { name: 'Kowloon Bay', hasData: false },
-  { name: 'Cheung Sha Wan', hasData: false },
-  { name: 'Lai Chi Kok', hasData: false },
-  { name: 'Tsuen Wan', hasData: false },
-  { name: 'Sha Tin', hasData: false },
-  { name: 'Tai Koo', hasData: false },
-  { name: 'Aberdeen', hasData: false },
-]
-
 export function PropertyFilters({ districts, hasResults = true }: PropertyFiltersProps) {
   const t = useTranslations()
   const router = useRouter()
@@ -57,10 +35,49 @@ export function PropertyFilters({ districts, hasResults = true }: PropertyFilter
   const currentSearch = searchParams.get('search') || ''
   const currentType = searchParams.get('type') || ''
 
-  // Helper function to get translated district name
-  const getDistrictTranslation = (district: string) => {
-    const districtKey = district.replace(/\s+/g, '')
-    return t(`districts.${districtKey}`) || district
+  // Office districts (7 districts with data)
+  const officeDistricts = [
+    { name: 'Central', hasData: true },
+    { name: 'Causeway Bay', hasData: true },
+    { name: 'Sheung Wan', hasData: true },
+    { name: 'Tsim Sha Tsui', hasData: true },
+    { name: 'Mong Kok', hasData: true },
+    { name: 'Quarry Bay', hasData: true },
+    { name: 'Kwun Tong', hasData: true },
+    { name: 'Admiralty', hasData: false },
+    { name: 'Wan Chai', hasData: false },
+    { name: 'Yau Ma Tei', hasData: false },
+    { name: 'North Point', hasData: false },
+    { name: 'Kowloon Bay', hasData: false },
+    { name: 'Cheung Sha Wan', hasData: false },
+    { name: 'Lai Chi Kok', hasData: false },
+    { name: 'Tsuen Wan', hasData: false },
+    { name: 'Sha Tin', hasData: false },
+    { name: 'Tai Koo', hasData: false },
+    { name: 'Aberdeen', hasData: false },
+  ]
+
+  // Retail/Industrial regions (3 regions)
+  const retailIndustrialRegions = [
+    { name: 'Hong Kong Island', hasData: true },
+    { name: 'Kowloon', hasData: true },
+    { name: 'New Territories', hasData: true },
+  ]
+
+  // Determine which locations to show based on property type
+  const isRetailOrIndustrial = currentType === 'retail' || currentType === 'industrial'
+  const locationsToShow = isRetailOrIndustrial ? retailIndustrialRegions : officeDistricts
+
+  // Helper function to get translated location name
+  const getLocationTranslation = (location: string) => {
+    if (isRetailOrIndustrial) {
+      if (location === 'Hong Kong Island') return t('regions.hongKongIsland') || location
+      if (location === 'Kowloon') return t('regions.kowloon') || location
+      if (location === 'New Territories') return t('regions.newTerritories') || location
+    }
+    // For districts, use existing translation logic
+    const districtKey = location.replace(/\s+/g, '')
+    return t(`districts.${districtKey}`) || location
   }
 
   const handleFilterChange = (key: string, value: string) => {
@@ -79,9 +96,9 @@ export function PropertyFilters({ districts, hasResults = true }: PropertyFilter
 
   const hasFilters = currentDistrict || currentGrade || currentSearch || currentType
 
-  // Filter to only show districts that exist in the database
+  // Filter to only show districts/regions that exist in the database
   const availableDistrictSet = new Set(districts)
-  const districtsToShow = ALL_DISTRICTS.filter(d => availableDistrictSet.has(d.name))
+  const filteredLocations = locationsToShow.filter(d => availableDistrictSet.has(d.name))
 
   return (
     <TooltipProvider>
@@ -108,37 +125,41 @@ export function PropertyFilters({ districts, hasResults = true }: PropertyFilter
             onValueChange={(value) => handleFilterChange('district', value || '')}
           >
             <SelectTrigger className="w-full sm:w-56">
-              <SelectValue placeholder={t('properties.filters.allDistricts')} />
+              <SelectValue placeholder={isRetailOrIndustrial ? t('properties.filters.allRegions') || t('properties.filters.allDistricts') : t('properties.filters.allDistricts')} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">{t('properties.filters.allDistricts')}</SelectItem>
+              <SelectItem value="">{isRetailOrIndustrial ? t('properties.filters.allRegions') || t('properties.filters.allDistricts') : t('properties.filters.allDistricts')}</SelectItem>
               <div className="px-2 py-1.5 text-xs font-medium text-muted-foreground uppercase tracking-wider">
                 {t('dataTransparency.districtList.sections.withData')}
               </div>
-              {districtsToShow.filter(d => d.hasData).map((district) => (
-                <SelectItem key={district.name} value={district.name} className="flex items-center gap-2">
+              {locationsToShow.filter(d => d.hasData).map((location) => (
+                <SelectItem key={location.name} value={location.name} className="flex items-center gap-2">
                   <div className="flex items-center gap-2">
                     <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
-                    <span>{getDistrictTranslation(district.name)}</span>
+                    <span>{getLocationTranslation(location.name)}</span>
                   </div>
                 </SelectItem>
               ))}
-              <div className="px-2 py-1.5 text-xs font-medium text-muted-foreground uppercase tracking-wider mt-1">
-                {t('dataTransparency.districtList.sections.comingSoon')}
-              </div>
-              {districtsToShow.filter(d => !d.hasData).map((district) => (
-                <Tooltip key={district.name}>
-                  <TooltipTrigger asChild>
-                    <div className="px-2 py-1.5 text-sm text-muted-foreground opacity-50 cursor-not-allowed flex items-center gap-2">
-                      <MapPinOff className="h-3.5 w-3.5" />
-                      <span>{getDistrictTranslation(district.name)}</span>
-                    </div>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p className="text-xs">{t('dataTransparency.districts.noDataTooltip')}</p>
-                  </TooltipContent>
-                </Tooltip>
-              ))}
+              {!isRetailOrIndustrial && (
+                <>
+                  <div className="px-2 py-1.5 text-xs font-medium text-muted-foreground uppercase tracking-wider mt-1">
+                    {t('dataTransparency.districtList.sections.comingSoon')}
+                  </div>
+                  {locationsToShow.filter(d => !d.hasData).map((district) => (
+                    <Tooltip key={district.name}>
+                      <TooltipTrigger asChild>
+                        <div className="px-2 py-1.5 text-sm text-muted-foreground opacity-50 cursor-not-allowed flex items-center gap-2">
+                          <MapPinOff className="h-3.5 w-3.5" />
+                          <span>{getLocationTranslation(district.name)}</span>
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p className="text-xs">{t('dataTransparency.districts.noDataTooltip')}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  ))}
+                </>
+              )}
             </SelectContent>
           </Select>
 

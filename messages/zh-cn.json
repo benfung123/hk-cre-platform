@@ -112,6 +112,11 @@
     "KowloonBay": "九龙湾",
     "KwunTong": "观塘"
   },
+  "regions": {
+    "hongKongIsland": "香港岛",
+    "kowloon": "九龙",
+    "newTerritories": "新界"
+  },
   "map": {
     "mtrStations": "港铁站",
     "streetView": "街景",

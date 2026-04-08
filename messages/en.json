@@ -112,6 +112,11 @@
     "KowloonBay": "Kowloon Bay",
     "KwunTong": "Kwun Tong"
   },
+  "regions": {
+    "hongKongIsland": "Hong Kong Island",
+    "kowloon": "Kowloon",
+    "newTerritories": "New Territories"
+  },
   "map": {
     "mtrStations": "MTR Stations",
     "streetView": "Street View",

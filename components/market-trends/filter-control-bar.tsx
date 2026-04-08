@@ -65,9 +65,10 @@ export function FilterControlBar({
 }: FilterControlBarProps) {
   const t = useTranslations('marketTrends')
   const tp = useTranslations('propertyType')
+  const tr = useTranslations()
 
-  // All 18 Hong Kong districts with data availability
-  const allDistricts = [
+  // Office districts (7 districts with data)
+  const officeDistricts = [
     { name: 'Central', hasData: true },
     { name: 'Causeway Bay', hasData: true },
     { name: 'Sheung Wan', hasData: true },
@@ -75,18 +76,19 @@ export function FilterControlBar({
     { name: 'Mong Kok', hasData: true },
     { name: 'Quarry Bay', hasData: true },
     { name: 'Kwun Tong', hasData: true },
-    { name: 'Admiralty', hasData: false },
-    { name: 'Wan Chai', hasData: false },
-    { name: 'Yau Ma Tei', hasData: false },
-    { name: 'North Point', hasData: false },
-    { name: 'Kowloon Bay', hasData: false },
-    { name: 'Cheung Sha Wan', hasData: false },
-    { name: 'Lai Chi Kok', hasData: false },
-    { name: 'Tsuen Wan', hasData: false },
-    { name: 'Sha Tin', hasData: false },
-    { name: 'Tai Koo', hasData: false },
-    { name: 'Aberdeen', hasData: false },
   ]
+
+  // Retail/Industrial regions (3 regions)
+  const retailIndustrialRegions = [
+    { name: 'Hong Kong Island', hasData: true },
+    { name: 'Kowloon', hasData: true },
+    { name: 'New Territories', hasData: true },
+  ]
+
+  // Determine which locations to show based on property type
+  const currentPropertyType = filters.propertyType || 'office'
+  const isRetailOrIndustrial = currentPropertyType === 'retail' || currentPropertyType === 'industrial'
+  const locationsToShow = isRetailOrIndustrial ? retailIndustrialRegions : officeDistricts
 
   const propertyTypeOptions: PropertyTypeOption[] = [
     { value: 'office', label: tp('types.office'), icon: Building2, color: 'bg-blue-500' },
@@ -191,19 +193,29 @@ export function FilterControlBar({
           <div className="flex flex-wrap items-center gap-4">
             {/* District Selector */}
             <div className="flex-1 min-w-[200px]">
-              <Label className="text-xs font-medium mb-2 block">{t('filters.district')}</Label>
+              <Label className="text-xs font-medium mb-2 block">
+                {isRetailOrIndustrial ? tr('regions') ? tr('regions.title') || tr('filters.district') : tr('filters.district') : tr('filters.district')}
+              </Label>
               <div className="flex flex-wrap gap-2">
-                {allDistricts.map((district, index) => {
-                  const isSelected = filters.districts.includes(district.name)
+                {locationsToShow.map((location, index) => {
+                  const isSelected = filters.districts.includes(location.name)
                   const colorClass = districtColors[index % districtColors.length]
-                  const hasData = district.hasData
+                  const hasData = location.hasData
+                  
+                  // Get translated name for regions
+                  let displayName = location.name
+                  if (isRetailOrIndustrial) {
+                    if (location.name === 'Hong Kong Island') displayName = tr('regions.hongKongIsland') || location.name
+                    else if (location.name === 'Kowloon') displayName = tr('regions.kowloon') || location.name
+                    else if (location.name === 'New Territories') displayName = tr('regions.newTerritories') || location.name
+                  }
                   
                   return (
                     <button
-                      key={district.name}
-                      onClick={() => hasData && handleDistrictToggle(district.name)}
+                      key={location.name}
+                      onClick={() => hasData && handleDistrictToggle(location.name)}
                       disabled={isLoading || !hasData}
-                      title={hasData ? district.name : `${district.name} - Data coming soon`}
+                      title={hasData ? location.name : `${location.name} - Data coming soon`}
                       className={cn(
                         "px-3 py-1.5 rounded-full text-xs font-medium transition-all flex items-center gap-1.5",
                         isSelected 
@@ -217,24 +229,34 @@ export function FilterControlBar({
                       {!hasData && (
                         <span className="text-[10px]">○</span>
                       )}
-                      {district.name}
+                      {displayName}
                     </button>
                   )
                 })}
               </div>
               {filters.districts.length > 0 && (
                 <div className="flex flex-wrap gap-1 mt-2">
-                  {filters.districts.map((district, index) => (
-                    <Badge 
-                      key={district} 
-                      variant="secondary"
-                      className={`${districtColors[index % districtColors.length]} text-white cursor-pointer`}
-                      onClick={() => handleDistrictToggle(district)}
-                    >
-                      {district}
-                      <X className="h-3 w-3 ml-1" />
-                    </Badge>
-                  ))}
+                  {filters.districts.map((district, index) => {
+                    // Get translated name for regions
+                    let displayName = district
+                    if (isRetailOrIndustrial) {
+                      if (district === 'Hong Kong Island') displayName = tr('regions.hongKongIsland') || district
+                      else if (district === 'Kowloon') displayName = tr('regions.kowloon') || district
+                      else if (district === 'New Territories') displayName = tr('regions.newTerritories') || district
+                    }
+                    
+                    return (
+                      <Badge 
+                        key={district} 
+                        variant="secondary"
+                        className={`${districtColors[index % districtColors.length]} text-white cursor-pointer`}
+                        onClick={() => handleDistrictToggle(district)}
+                      >
+                        {displayName}
+                        <X className="h-3 w-3 ml-1" />
+                      </Badge>
+                    )
+                  })}
                 </div>
               )}
             </div>

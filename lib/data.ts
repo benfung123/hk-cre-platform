@@ -24,8 +24,10 @@ export async function getProperties(filters?: {
     query = query.eq('district', filters.district)
   }
 
-  if (filters?.type) {
-    query = query.eq('property_type', filters.type)
+  // Filter by property type - use property_type column if available, fallback to name patterns
+  if (filters?.type && filters.type !== 'all') {
+    // Try property_type column first, but also filter by name patterns as fallback
+    query = query.or(`property_type.eq.${filters.type},name.ilike.%${filters.type}%`)
   }
 
   if (filters?.grade) {
