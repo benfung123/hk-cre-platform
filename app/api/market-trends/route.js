@@ -1,31 +1,27 @@
 /**
  * Market Trends API Endpoint
  * GET /api/market-trends
- * 
- * Query Parameters:
- * - district: Filter by district name (optional)
- * - grade: Filter by grade A/B/C (optional)
- * - startDate: Start date (YYYY-MM-DD) (optional)
- * - endDate: End date (YYYY-MM-DD) (optional)
- * - periodType: monthly/quarterly/yearly (optional)
- * - propertyType: office/retail/industrial (optional, default: office)
- * - limit: Maximum records to return (default: 1000)
- * - orderBy: Field to order by (default: date)
- * - order: asc/desc (default: desc)
  */
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseKey = process.env.SUPABASE_SERVICE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-
-if (!supabaseUrl || !supabaseKey) {
-  console.error('Missing Supabase environment variables');
-}
-
-const supabase = createClient(supabaseUrl, supabaseKey);
+// Dynamic export to prevent static generation at build time
+export const dynamic = 'force-dynamic';
 
 export async function GET(request) {
   try {
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseKey = process.env.SUPABASE_SERVICE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+    if (!supabaseUrl || !supabaseKey) {
+      console.error('Missing Supabase environment variables');
+      return Response.json(
+        { error: 'Server configuration error' },
+        { status: 500 }
+      );
+    }
+
+    const supabase = createClient(supabaseUrl, supabaseKey);
+    
     const { searchParams } = new URL(request.url);
     
     // Parse query parameters
