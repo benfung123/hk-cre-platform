@@ -31,6 +31,7 @@ interface Toast {
   description?: string
   variant?: VariantProps<typeof toastVariants>['variant']
   duration?: number
+  toastId?: string // Optional ID for deduplication
 }
 
 interface ToastContextType {
@@ -59,7 +60,19 @@ export function ToastProvider({ children }: ToastProviderProps) {
 
   const addToast = React.useCallback((toast: Omit<Toast, 'id'>) => {
     const id = Math.random().toString(36).substring(2, 9)
-    setToasts((prev) => [...prev, { ...toast, id }])
+    
+    setToasts((prev) => {
+      // If toast has a toastId, remove any existing toast with the same toastId
+      let filtered = prev
+      if (toast.toastId) {
+        filtered = prev.filter((t) => t.toastId !== toast.toastId)
+      }
+      // Also limit total toasts to prevent stacking (max 3)
+      if (filtered.length >= 3) {
+        filtered = filtered.slice(-2) // Keep only the 2 most recent
+      }
+      return [...filtered, { ...toast, id }]
+    })
     return id
   }, [])
 
@@ -140,15 +153,15 @@ export function useSimpleToast() {
   const { addToast } = useToast()
 
   return {
-    success: (title: string, description?: string, duration?: number) =>
-      addToast({ title, description, variant: 'success', duration }),
-    error: (title: string, description?: string, duration?: number) =>
-      addToast({ title, description, variant: 'error', duration }),
-    warning: (title: string, description?: string, duration?: number) =>
-      addToast({ title, description, variant: 'warning', duration }),
-    info: (title: string, description?: string, duration?: number) =>
-      addToast({ title, description, variant: 'info', duration }),
-    default: (title: string, description?: string, duration?: number) =>
-      addToast({ title, description, variant: 'default', duration }),
+    success: (title: string, description?: string, duration?: number, toastId?: string) =>
+      addToast({ title, description, variant: 'success', duration, toastId: toastId || 'success-toast' }),
+    error: (title: string, description?: string, duration?: number, toastId?: string) =>
+      addToast({ title, description, variant: 'error', duration, toastId: toastId || 'error-toast' }),
+    warning: (title: string, description?: string, duration?: number, toastId?: string) =>
+      addToast({ title, description, variant: 'warning', duration, toastId: toastId || 'warning-toast' }),
+    info: (title: string, description?: string, duration?: number, toastId?: string) =>
+      addToast({ title, description, variant: 'info', duration, toastId: toastId || 'info-toast' }),
+    default: (title: string, description?: string, duration?: number, toastId?: string) =>
+      addToast({ title, description, variant: 'default', duration, toastId }),
   }
 }

@@ -32,6 +32,7 @@ export function useCompare() {
       const stored = localStorage.getItem(STORAGE_KEY)
       if (stored) {
         try {
+          // eslint-disable-next-line react-hooks/set-state-in-effect
           setCompareList(JSON.parse(stored))
         } catch (e) {
           console.error('Failed to parse compare list:', e)
@@ -49,38 +50,86 @@ export function useCompare() {
   }, [compareList, isLoaded])
 
   const addToCompare = useCallback((propertyId: string) => {
+    let action: 'added' | 'already' | 'full' | null = null
+
     setCompareList(prev => {
       if (prev.includes(propertyId)) {
-        toast.info(t('alreadyInCompare') || 'Already in compare list')
+        action = 'already'
         return prev
       }
       if (prev.length >= MAX_COMPARE) {
-        toast.warning(t('compareFull') || 'Compare list full (max 3)')
+        action = 'full'
         return prev
       }
-      toast.success(t('addedToCompare') || 'Added to compare')
+      action = 'added'
       return [...prev, propertyId]
     })
+
+    // Show toast outside setState using setTimeout
+    if (action === 'added') {
+      setTimeout(() => {
+        toast.success(t('addedToCompare') || 'Added to compare', undefined, undefined, 'compare-toast')
+      }, 0)
+    } else if (action === 'already') {
+      setTimeout(() => {
+        toast.info(t('alreadyInCompare') || 'Already in compare list', undefined, undefined, 'compare-toast')
+      }, 0)
+    } else if (action === 'full') {
+      setTimeout(() => {
+        toast.warning(t('compareFull') || 'Compare list full (max 3)', undefined, undefined, 'compare-toast')
+      }, 0)
+    }
   }, [toast, t])
 
   const removeFromCompare = useCallback((propertyId: string) => {
-    setCompareList(prev => prev.filter(id => id !== propertyId))
-    toast.info(t('removedFromCompare') || 'Removed from compare')
+    let shouldRemove = false
+    
+    setCompareList(prev => {
+      const exists = prev.includes(propertyId)
+      if (exists) {
+        shouldRemove = true
+      }
+      return prev.filter(id => id !== propertyId)
+    })
+    
+    // Show toast outside setState
+    if (shouldRemove) {
+      setTimeout(() => {
+        toast.info(t('removedFromCompare') || 'Removed from compare', undefined, undefined, 'compare-toast')
+      }, 0)
+    }
   }, [toast, t])
 
   const toggleCompare = useCallback((propertyId: string) => {
+    let action: 'added' | 'removed' | 'full' | null = null
+
     setCompareList(prev => {
       if (prev.includes(propertyId)) {
-        toast.info(t('removedFromCompare') || 'Removed from compare')
+        action = 'removed'
         return prev.filter(id => id !== propertyId)
       }
       if (prev.length >= MAX_COMPARE) {
-        toast.warning(t('compareFull') || 'Compare list full (max 3)')
+        action = 'full'
         return prev
       }
-      toast.success(t('addedToCompare') || 'Added to compare')
+      action = 'added'
       return [...prev, propertyId]
     })
+
+    // Show toast outside setState using setTimeout
+    if (action === 'added') {
+      setTimeout(() => {
+        toast.success(t('addedToCompare') || 'Added to compare', undefined, undefined, 'compare-toast')
+      }, 0)
+    } else if (action === 'removed') {
+      setTimeout(() => {
+        toast.info(t('removedFromCompare') || 'Removed from compare', undefined, undefined, 'compare-toast')
+      }, 0)
+    } else if (action === 'full') {
+      setTimeout(() => {
+        toast.warning(t('compareFull') || 'Compare list full (max 3)', undefined, undefined, 'compare-toast')
+      }, 0)
+    }
   }, [toast, t])
 
   const isInCompare = useCallback((propertyId: string) => {

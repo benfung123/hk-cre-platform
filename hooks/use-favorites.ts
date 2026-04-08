@@ -101,39 +101,57 @@ export function useFavorites(): UseFavoritesReturn {
    * Returns true if added, false if already exists or at max limit
    */
   const addFavorite = useCallback((propertyId: string): boolean => {
-    let added = false
+    let shouldAdd = false
 
     setState(prev => {
       if (prev.favorites.includes(propertyId)) {
-        toast.info(t('alreadyInFavorites') || 'Already in favorites')
+        toast.info(t('alreadyInFavorites') || 'Already in favorites', undefined, undefined, 'favorites-toast')
         return prev
       }
       if (prev.favorites.length >= MAX_FAVORITES) {
-        toast.warning(t('favoritesFull') || 'Favorites list full')
+        toast.warning(t('favoritesFull') || 'Favorites list full', undefined, undefined, 'favorites-toast')
         return prev
       }
-      added = true
+      shouldAdd = true
       return {
         ...prev,
         favorites: [...prev.favorites, propertyId]
       }
     })
 
-    if (added) {
-      toast.success(t('addedToFavorites') || 'Added to watchlist')
+    // Show toast outside setState to avoid cascading renders
+    if (shouldAdd) {
+      // Use setTimeout to avoid synchronous setState during render issues
+      setTimeout(() => {
+        toast.success(t('addedToFavorites') || 'Added to watchlist', undefined, undefined, 'favorites-toast')
+      }, 0)
     }
-    return added
+    return shouldAdd
   }, [toast, t])
 
   /**
    * Remove a property from favorites
    */
   const removeFavorite = useCallback((propertyId: string) => {
-    setState(prev => ({
-      ...prev,
-      favorites: prev.favorites.filter(id => id !== propertyId)
-    }))
-    toast.info(t('removedFromFavorites') || 'Removed from watchlist')
+    let shouldRemove = false
+    
+    setState(prev => {
+      const exists = prev.favorites.includes(propertyId)
+      if (exists) {
+        shouldRemove = true
+      }
+      return {
+        ...prev,
+        favorites: prev.favorites.filter(id => id !== propertyId)
+      }
+    })
+    
+    // Show toast outside setState
+    if (shouldRemove) {
+      setTimeout(() => {
+        toast.info(t('removedFromFavorites') || 'Removed from watchlist', undefined, undefined, 'favorites-toast')
+      }, 0)
+    }
   }, [toast, t])
 
   /**
@@ -141,34 +159,45 @@ export function useFavorites(): UseFavoritesReturn {
    * Returns true if now favorited, false if unfavorited
    */
   const toggleFavorite = useCallback((propertyId: string): boolean => {
-    let isNowFavorite = false
+    let action: 'added' | 'removed' | 'full' | null = null
 
     setState(prev => {
       const exists = prev.favorites.includes(propertyId)
       if (exists) {
-        isNowFavorite = false
+        action = 'removed'
         return {
           ...prev,
           favorites: prev.favorites.filter(id => id !== propertyId)
         }
       }
       if (prev.favorites.length >= MAX_FAVORITES) {
-        toast.warning(t('favoritesFull') || 'Favorites list full')
+        action = 'full'
         return prev
       }
-      isNowFavorite = true
+      action = 'added'
       return {
         ...prev,
         favorites: [...prev.favorites, propertyId]
       }
     })
 
-    if (isNowFavorite) {
-      toast.success(t('addedToFavorites') || 'Added to watchlist')
-    } else {
-      toast.info(t('removedFromFavorites') || 'Removed from watchlist')
+    // Show toast outside setState using setTimeout
+    if (action === 'added') {
+      setTimeout(() => {
+        toast.success(t('addedToFavorites') || 'Added to watchlist', undefined, undefined, 'favorites-toast')
+      }, 0)
+      return true
+    } else if (action === 'removed') {
+      setTimeout(() => {
+        toast.info(t('removedFromFavorites') || 'Removed from watchlist', undefined, undefined, 'favorites-toast')
+      }, 0)
+      return false
+    } else if (action === 'full') {
+      setTimeout(() => {
+        toast.warning(t('favoritesFull') || 'Favorites list full', undefined, undefined, 'favorites-toast')
+      }, 0)
     }
-    return isNowFavorite
+    return false
   }, [toast, t])
 
   /**
