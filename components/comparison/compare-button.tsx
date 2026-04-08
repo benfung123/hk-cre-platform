@@ -1,6 +1,6 @@
 'use client'
 
-import { Scale, Check } from 'lucide-react'
+import { Scale, Check, Lock } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useCompare } from '@/hooks/use-compare'
 import { cn } from '@/lib/utils'
@@ -93,21 +93,22 @@ export function CompareButton({
           <TooltipTrigger asChild>
             <div className={className}>
               <Button
-                variant="outline"
+                variant="ghost"
                 size={showLabel ? 'default' : 'icon'}
                 disabled
                 className={cn(
+                  'text-muted-foreground',
                   !showLabel && sizeClasses[size],
                   className
                 )}
               >
-                <Scale className={cn(iconSizes[size], showLabel && 'mr-2')} />
-                {showLabel && t('add')}
+                <Lock className={cn(iconSizes[size], showLabel && 'mr-2')} />
+                {showLabel && t('compareFull')}
               </Button>
             </div>
           </TooltipTrigger>
           <TooltipContent>
-            <p>{t('maxReached')}</p>
+            <p>{t('compareFullTooltip') || 'Compare list full (3/3) - remove a property to add more'}</p>
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>

@@ -215,6 +215,7 @@
     "addedToFavorites": "Added to watchlist",
     "removedFromFavorites": "Removed from watchlist",
     "compareFull": "Compare list full (max 3)",
+    "compareFullDetailed": "Compare list full (3/3). Remove a property to add more.",
     "alreadyInCompare": "Already in compare list",
     "alreadyInFavorites": "Already in favorites",
     "favoritesFull": "Favorites list full"
@@ -353,6 +354,13 @@
   "propertyType": {
     "types": {
       "all": "All Types",
+      "office": "Office",
+      "retail": "Retail",
+      "industrial": "Industrial"
+    }
+  }
+}
+"all": "All Types",
       "office": "Office",
       "retail": "Retail",
       "industrial": "Industrial"

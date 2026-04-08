@@ -215,6 +215,7 @@
     "addedToFavorites": "已加入收藏",
     "removedFromFavorites": "已从收藏移除",
     "compareFull": "比较列表已满（最多3个）",
+    "compareFullDetailed": "比较列表已满（3/3）。请移除物业后再添加。",
     "alreadyInCompare": "已在比较列表中",
     "alreadyInFavorites": "已在收藏中",
     "favoritesFull": "收藏列表已满"
@@ -353,6 +354,13 @@
   "propertyType": {
     "types": {
       "all": "全部类型",
+      "office": "办公室",
+      "retail": "零售",
+      "industrial": "工业"
+    }
+  }
+}
+ "全部类型",
       "office": "办公室",
       "retail": "零售",
       "industrial": "工业"

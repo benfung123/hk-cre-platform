@@ -76,7 +76,7 @@ export function useCompare() {
     
     if (compareList.length >= MAX_COMPARE) {
       setTimeout(() => {
-        toast.warning(t('compareFull') || 'Compare list full (max 3)', undefined, undefined, 'compare-toast')
+        toast.warning(t('compareFullDetailed') || 'Compare list full (3/3). Remove a property to add more.', undefined, undefined, 'compare-toast')
       }, 0)
       return
     }

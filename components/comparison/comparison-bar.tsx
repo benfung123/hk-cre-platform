@@ -1,6 +1,6 @@
 'use client'
 
-import { Scale, X, ArrowRight, Heart } from 'lucide-react'
+import { Scale, X, ArrowRight, Heart, Lock } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useCompare } from '@/hooks/use-compare'
 import { useFavorites } from '@/hooks/use-favorites'
@@ -93,6 +93,16 @@ export function ComparisonBar() {
               </div>
               <span className="text-sm font-medium text-blue-900 dark:text-blue-100">
                 {t('propertiesSelected', { count: compareCount })}
+              </span>
+              {/* Counter showing X/3 */}
+              <span className={cn(
+                "text-sm ml-1",
+                compareList.length >= 3 ? "text-amber-600 font-medium" : "text-muted-foreground"
+              )}>
+                {compareList.length}/3
+                {compareList.length >= 3 && (
+                  <Lock className="h-3 w-3 inline ml-1" />
+                )}
               </span>
             </div>
 
