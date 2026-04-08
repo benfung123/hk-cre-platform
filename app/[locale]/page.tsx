@@ -35,7 +35,7 @@ export default async function HomePage() {
         {/* Background image - full bleed */}
         <div className="absolute inset-0">
           <Image
-            src="/og-image.png"
+            src="/hero-banner-new.jpg"
             fill
             className="object-cover"
             alt="Hong Kong Commercial Real Estate"
