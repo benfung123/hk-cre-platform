@@ -31,6 +31,7 @@ export function Navbar() {
             </Link>
             <Link href="/compare" className="transition-colors hover:text-foreground/80">
               {t('compare')}
+            </Link>
             <Link href="/dashboard" className="transition-colors hover:text-foreground/80">
               {t('analytics')}
             </Link>
@@ -93,6 +94,7 @@ export function Navbar() {
               </Link>
               <Link href="/compare" className="py-2" onClick={() => setIsMenuOpen(false)}>
                 {t('compare')}
+              </Link>
               <Link href="/dashboard" className="py-2" onClick={() => setIsMenuOpen(false)}>
                 {t('analytics')}
               </Link>
