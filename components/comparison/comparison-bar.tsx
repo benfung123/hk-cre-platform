@@ -32,6 +32,12 @@ export function ComparisonBar() {
   const [properties, setProperties] = useState<PropertyPreview[]>([])
   const [showAddAllFavorites, setShowAddAllFavorites] = useState(false)
 
+  // Debug logging
+  useEffect(() => {
+    console.log('[CompareBar] compareList:', compareList, 'length:', compareList.length)
+    console.log('[CompareBar] compareCount:', compareCount)
+  }, [compareList, compareCount])
+
   useEffect(() => {
     async function loadProperties() {
       if (compareList.length === 0) {
@@ -97,10 +103,10 @@ export function ComparisonBar() {
               {/* Counter showing X/3 */}
               <span className={cn(
                 "text-sm ml-1",
-                compareList.length >= 3 ? "text-amber-600 font-medium" : "text-muted-foreground"
+                compareCount >= 3 ? "text-amber-600 font-medium" : "text-muted-foreground"
               )}>
-                {compareList.length}/3
-                {compareList.length >= 3 && (
+                {compareCount}/3
+                {compareCount >= 3 && (
                   <Lock className="h-3 w-3 inline ml-1" />
                 )}
               </span>
