@@ -22,6 +22,7 @@ import {
 
 interface PropertyFiltersProps {
   districts: string[]
+  hasResults?: boolean
 }
 
 // All 18 Hong Kong districts with data availability
@@ -46,7 +47,7 @@ const ALL_DISTRICTS = [
   { name: 'Aberdeen', hasData: false },
 ]
 
-export function PropertyFilters({ districts }: PropertyFiltersProps) {
+export function PropertyFilters({ districts, hasResults = true }: PropertyFiltersProps) {
   const t = useTranslations()
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -176,7 +177,7 @@ export function PropertyFilters({ districts }: PropertyFiltersProps) {
             </SelectContent>
           </Select>
 
-          {hasFilters && (
+          {hasFilters && hasResults && (
             <Button variant="ghost" onClick={clearFilters}>
               <X className="h-4 w-4 mr-2" />
               {t('properties.filters.clear')}

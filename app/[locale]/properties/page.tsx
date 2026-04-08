@@ -4,7 +4,7 @@ import { PropertyList } from '@/components/property-list'
 import { PropertyFilters } from '@/components/property-filters'
 import { GradeDistribution } from '@/components/grade-distribution'
 import { Skeleton } from '@/components/ui/skeleton'
-import { getProperties, getDistricts, getGradeDistribution } from '@/lib/data'
+import { getProperties, getDistricts } from '@/lib/data'
 import { DataFreshnessIndicator } from '@/components/data-source'
 import { Database, Info } from 'lucide-react'
 import {
@@ -26,20 +26,46 @@ interface PropertiesPageProps {
 // Force dynamic rendering since we need database access
 export const dynamic = 'force-dynamic'
 
+// Helper function to calculate grade distribution from properties
+function calculateGradeDistribution(properties: { grade: string | null; name: string }[]) {
+  // Only include office properties (exclude retail/industrial by name pattern)
+  const officeProperties = properties.filter(p => {
+    const name = p.name.toLowerCase()
+    return !name.includes('shop') && 
+           !name.includes('retail') && 
+           !name.includes('flatted factory') && 
+           !name.includes('industrial') && 
+           !name.includes('logistics')
+  })
+
+  const distribution = officeProperties.reduce((acc, curr) => {
+    const grade = curr.grade || 'Unknown'
+    acc[grade] = (acc[grade] || 0) + 1
+    return acc
+  }, {} as Record<string, number>)
+
+  return Object.entries(distribution)
+    .map(([grade, count]) => ({ grade, count }))
+    .filter(({ count }) => count > 0) // Hide badges with 0 count
+    .sort((a, b) => b.count - a.count)
+}
+
 export default async function PropertiesPage({ searchParams }: PropertiesPageProps) {
   const params = await searchParams
   const t = await getTranslations()
   
-  const [properties, districts, gradeDistribution] = await Promise.all([
+  const [properties, districts] = await Promise.all([
     getProperties({
       district: params.district,
       grade: params.grade,
       search: params.search,
       type: params.type
     }),
-    getDistricts(),
-    getGradeDistribution()
+    getDistricts()
   ])
+
+  // Calculate grade distribution from filtered properties
+  const gradeDistribution = calculateGradeDistribution(properties)
 
   // Get the most recent update date from properties
   const mostRecentUpdate = properties.length > 0 
@@ -48,6 +74,9 @@ export default async function PropertiesPage({ searchParams }: PropertiesPagePro
         properties[0].updated_at
       )
     : new Date().toISOString()
+
+  // Check if we should show grade distribution (only for office properties or when no type filter)
+  const showGradeDistribution = !params.type || params.type === 'office'
 
   return (
     <div className="flex flex-col">
@@ -109,10 +138,12 @@ export default async function PropertiesPage({ searchParams }: PropertiesPagePro
 
       <div className="container py-8">
         <div className="flex flex-col gap-8">
-          <PropertyFilters districts={districts} />
+          <PropertyFilters districts={districts} hasResults={properties.length > 0} />
           
-          {/* Grade Distribution */}
-          <GradeDistribution grades={gradeDistribution} />
+          {/* Grade Distribution - Only show for office properties */}
+          {showGradeDistribution && gradeDistribution.length > 0 && (
+            <GradeDistribution grades={gradeDistribution} />
+          )}
 
           <Suspense fallback={<PropertyListSkeleton />}>
             <PropertyList properties={properties} />
