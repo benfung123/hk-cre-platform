@@ -1,15 +1,13 @@
 /**
- * RVD Price Data Importer
+ * RVD Price Data Importer (Fixed)
  * Imports sale/price data from his_data_7.xls
+ * Fixed to handle actual file structure
  */
 const { createClient } = require('@supabase/supabase-js');
 const xlsx = require('xlsx');
 const path = require('path');
 
-// Load configuration
-const { PRICE_COLUMNS } = require('./config/districts');
-
-// Supabase configuration - use environment variables
+// Supabase configuration
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_SERVICE_KEY;
 
@@ -24,14 +22,50 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 const SQM_TO_SQFT = 10.764;
 const DATA_FILE = path.join(__dirname, 'data', 'his_data_7.xls');
 
+// Price column mappings based on actual his_data_7.xls structure
+// Each grade section has: Sheung Wan (Wan), Central, Causeway Bay, Quarry Bay, Tsim Sha Tsui, Mong Kok, Kwun Tong
+const PRICE_COLUMN_MAP = {
+  gradeA: [
+    { col: 8, district: 'Sheung Wan' },
+    { col: 11, district: 'Central' },
+    { col: 14, district: 'Causeway Bay' },
+    { col: 17, district: 'Quarry Bay' },
+    { col: 20, district: 'Tsim Sha Tsui' },
+    { col: 23, district: 'Mong Kok' },
+    { col: 26, district: 'Kwun Tong' },
+  ],
+  gradeB: [
+    { col: 30, district: 'Sheung Wan' },
+    { col: 33, district: 'Central' },
+    { col: 36, district: 'Causeway Bay' },
+    { col: 39, district: 'Quarry Bay' },
+    { col: 42, district: 'Tsim Sha Tsui' },
+    { col: 45, district: 'Mong Kok' },
+    { col: 48, district: 'Kwun Tong' },
+  ],
+  gradeC: [
+    { col: 52, district: 'Sheung Wan' },
+    { col: 55, district: 'Central' },
+    { col: 58, district: 'Causeway Bay' },
+    { col: 61, district: 'Quarry Bay' },
+    { col: 64, district: 'Tsim Sha Tsui' },
+    { col: 67, district: 'Mong Kok' },
+    { col: 70, district: 'Kwun Tong' },
+  ],
+};
+
 /**
- * Extract numeric value from cell
+ * Extract numeric value from cell - handles parentheses, spaces, and n/a
  */
 function extractValue(cell) {
   if (cell === undefined || cell === null) return null;
   if (typeof cell === 'number') return cell;
   if (typeof cell !== 'string') return null;
   
+  // Skip n/a values
+  if (cell.toLowerCase().includes('n/a')) return null;
+  
+  // Remove parentheses, spaces, and other non-numeric characters except decimal point
   const cleaned = cell.replace(/[()\s\-\/]/g, '');
   const num = parseFloat(cleaned);
   return isNaN(num) ? null : num;
@@ -62,7 +96,11 @@ async function getOrCreateProperty(district, grade) {
         name,
         address: `${district}, Hong Kong`,
         district,
+        property_type: 'office',
         grade,
+        data_type: 'aggregate',
+        data_source: 'RVD',
+        data_quality_score: 4,
         year_built: 1995,
         total_sqft: 500000,
         floors: 25
@@ -106,22 +144,30 @@ async function importPriceSheet(wb, sheetName, startYear, isQuarterly = true) {
   const allColumns = [];
   
   // Add Grade A columns if they exist
-  for (const col of PRICE_COLUMNS.gradeA) {
+  for (const col of PRICE_COLUMN_MAP.gradeA) {
     if (col.col < maxCol) {
       allColumns.push({ ...col, grade: 'A' });
     }
   }
   
   // Add Grade B columns if they exist
-  for (const col of PRICE_COLUMNS.gradeB) {
+  for (const col of PRICE_COLUMN_MAP.gradeB) {
     if (col.col < maxCol) {
       allColumns.push({ ...col, grade: 'B' });
     }
   }
   
+  // Add Grade C columns if they exist
+  for (const col of PRICE_COLUMN_MAP.gradeC) {
+    if (col.col < maxCol) {
+      allColumns.push({ ...col, grade: 'C' });
+    }
+  }
+  
   console.log(`   Processing ${allColumns.length} district-grade combinations`);
-  console.log(`   Grade A: ${PRICE_COLUMNS.gradeA.filter(c => c.col < maxCol).length} districts`);
-  console.log(`   Grade B: ${PRICE_COLUMNS.gradeB.filter(c => c.col < maxCol).length} districts`);
+  console.log(`   Grade A: ${PRICE_COLUMN_MAP.gradeA.filter(c => c.col < maxCol).length} districts`);
+  console.log(`   Grade B: ${PRICE_COLUMN_MAP.gradeB.filter(c => c.col < maxCol).length} districts`);
+  console.log(`   Grade C: ${PRICE_COLUMN_MAP.gradeC.filter(c => c.col < maxCol).length} districts`);
   
   // Build property map
   const propertyMap = {};
@@ -139,16 +185,20 @@ async function importPriceSheet(wb, sheetName, startYear, isQuarterly = true) {
   let currentYear = startYear;
   let rowCount = 0;
   let transactionCount = 0;
+  let skippedEmpty = 0;
+  let skippedInvalid = 0;
   
-  // Find header row
+  // Find data start row - look for year header
   let dataStartRow = 11;
-  for (let i = 0; i < Math.min(data.length, 15); i++) {
+  for (let i = 0; i < Math.min(data.length, 20); i++) {
     const row = data[i];
-    if (row && (row[1] === 'Year' || row[1] === '年')) {
+    if (row && (row[1] === 'Year' || row[1] === '年' || row[1] === 1999 || row[1] === 1982)) {
       dataStartRow = i + 1;
       break;
     }
   }
+  
+  console.log(`   Data starts at row ${dataStartRow}`);
   
   for (let i = dataStartRow; i < data.length; i++) {
     const row = data[i];
@@ -165,21 +215,27 @@ async function importPriceSheet(wb, sheetName, startYear, isQuarterly = true) {
     let periodLabel;
     
     if (isQuarterly) {
-      // Parse quarter from columns 2-4
+      // Parse quarter from columns
       let quarter = null;
-      if (row[2] && row[3] && row[4]) {
-        const qStart = row[2]?.toString().trim();
-        const qEnd = row[4]?.toString().trim();
+      if (row[3] && row[4] && row[5]) {
+        const qStart = row[3]?.toString().trim();
+        const qEnd = row[5]?.toString().trim();
         if (qStart && qEnd) {
           quarter = `${qStart}-${qEnd}`;
         }
       }
       
-      if (!quarter || !quarter.includes('-')) continue;
+      if (!quarter || !quarter.includes('-')) {
+        skippedEmpty++;
+        continue;
+      }
       
       const monthMap = { '1-3': '02', '4-6': '05', '7-9': '08', '10-12': '11' };
       const month = monthMap[quarter];
-      if (!month) continue;
+      if (!month) {
+        skippedInvalid++;
+        continue;
+      }
       
       date = `${currentYear}-${month}-15`;
       periodLabel = `Q${quarter}/${currentYear}`;
@@ -192,7 +248,9 @@ async function importPriceSheet(wb, sheetName, startYear, isQuarterly = true) {
     // Process each district
     for (const { col, district, grade } of allColumns) {
       const priceValue = extractValue(row[col]);
-      if (!priceValue || priceValue <= 0) continue;
+      if (!priceValue || priceValue <= 0) {
+        continue;
+      }
       
       const propertyId = propertyMap[`${district}-${grade}`];
       if (!propertyId) continue;
@@ -236,6 +294,9 @@ async function importPriceSheet(wb, sheetName, startYear, isQuarterly = true) {
   }
   
   console.log('');
+  if (skippedEmpty > 0) console.log(`   ℹ️ Skipped ${skippedEmpty} empty rows`);
+  if (skippedInvalid > 0) console.log(`   ℹ️ Skipped ${skippedInvalid} invalid quarter rows`);
+  
   return transactionCount;
 }
 
@@ -243,8 +304,8 @@ async function importPriceSheet(wb, sheetName, startYear, isQuarterly = true) {
  * Import price data from all sheets
  */
 async function importPriceData() {
-  console.log('💰 RVD Price Data Importer');
-  console.log('===========================');
+  console.log('💰 RVD Price Data Importer (Fixed)');
+  console.log('====================================');
   console.log(`Data file: ${DATA_FILE}`);
   console.log('');
   
@@ -283,13 +344,17 @@ async function importPriceData() {
     console.log(`Total sale transactions in database: ${count}`);
   }
   
-  // Count properties
-  const { count: propertyCount, error: propError } = await supabase
+  // Count properties by type
+  const { data: typeCounts, error: typeError } = await supabase
     .from('properties')
-    .select('*', { count: 'exact', head: true });
+    .select('property_type, count(*)')
+    .group('property_type');
   
-  if (!propError) {
-    console.log(`Total properties in database: ${propertyCount}`);
+  if (!typeError && typeCounts) {
+    console.log('\n📊 Properties by type:');
+    typeCounts.forEach(tc => {
+      console.log(`   ${tc.property_type}: ${tc.count}`);
+    });
   }
   
   console.log('');
