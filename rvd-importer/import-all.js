@@ -19,21 +19,31 @@ async function getPropertyCounts() {
   const supabase = createClient(supabaseUrl, supabaseKey);
   
   try {
-    // Get counts by property type
-    const { data: typeData, error: typeError } = await supabase
+    // Get all properties and count manually (since .group() isn't available)
+    const { data: allProperties, error: propError } = await supabase
       .from('properties')
-      .select('property_type, count(*)')
-      .group('property_type');
+      .select('name, grade');
     
-    if (typeError) return null;
+    if (propError) return null;
     
-    // Get counts by district
-    const { data: districtData, error: districtError } = await supabase
-      .from('properties')
-      .select('district, count(*)')
-      .group('district');
+    // Count by inferred property type
+    const counts = {
+      office: 0,
+      retail: 0,
+      flatted_factory: 0,
+      total: 0
+    };
     
-    if (districtError) return null;
+    allProperties.forEach(p => {
+      counts.total++;
+      if (p.name.includes('Retail') || p.grade === 'Retail') {
+        counts.retail++;
+      } else if (p.name.includes('Industrial') || p.grade === 'Industrial') {
+        counts.flatted_factory++;
+      } else {
+        counts.office++;
+      }
+    });
     
     // Get transaction counts by type
     const { count: leaseCount, error: leaseError } = await supabase
@@ -47,8 +57,11 @@ async function getPropertyCounts() {
       .eq('type', 'sale');
     
     return {
-      byType: typeData || [],
-      byDistrict: districtData || [],
+      byType: [
+        { property_type: 'office', count: counts.office },
+        { property_type: 'retail', count: counts.retail },
+        { property_type: 'flatted_factory', count: counts.flatted_factory }
+      ],
       transactions: {
         lease: leaseCount || 0,
         sale: saleCount || 0

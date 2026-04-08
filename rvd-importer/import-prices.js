@@ -89,22 +89,20 @@ async function getOrCreateProperty(district, grade) {
       return existing.id;
     }
     
-    // Create new property
+    // Create new property (only use columns that exist)
+    const propertyData = {
+      name,
+      address: `${district}, Hong Kong`,
+      district,
+      grade,
+      year_built: 1995,
+      total_sqft: 500000,
+      floors: 25
+    };
+    
     const { data: created, error: insertError } = await supabase
       .from('properties')
-      .insert({
-        name,
-        address: `${district}, Hong Kong`,
-        district,
-        property_type: 'office',
-        grade,
-        data_type: 'aggregate',
-        data_source: 'RVD',
-        data_quality_score: 4,
-        year_built: 1995,
-        total_sqft: 500000,
-        floors: 25
-      })
+      .insert(propertyData)
       .select('id')
       .single();
     
@@ -344,16 +342,22 @@ async function importPriceData() {
     console.log(`Total sale transactions in database: ${count}`);
   }
   
-  // Count properties by type
-  const { data: typeCounts, error: typeError } = await supabase
+  // Count properties by type (manual count since .group() isn't available)
+  const { data: allProps, error: typeError } = await supabase
     .from('properties')
-    .select('property_type, count(*)')
-    .group('property_type');
+    .select('name');
   
-  if (!typeError && typeCounts) {
+  if (!typeError && allProps) {
+    const typeCounts = {};
+    allProps.forEach(p => {
+      const type = p.name.includes('Retail') ? 'retail' :
+                   p.name.includes('Industrial') ? 'flatted_factory' : 'office';
+      typeCounts[type] = (typeCounts[type] || 0) + 1;
+    });
+    
     console.log('\n📊 Properties by type:');
-    typeCounts.forEach(tc => {
-      console.log(`   ${tc.property_type}: ${tc.count}`);
+    Object.entries(typeCounts).forEach(([type, count]) => {
+      console.log(`   ${type}: ${count}`);
     });
   }
   
