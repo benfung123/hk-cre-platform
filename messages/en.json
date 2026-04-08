@@ -226,6 +226,7 @@
       "grade": "Grade",
       "timeRange": "Time Range",
       "metric": "Metric",
+      "propertyType": "Property Type",
       "rent": "Rent",
       "price": "Price"
     },
@@ -303,5 +304,53 @@
       "title": "Top 5 Districts"
     },
     "properties": "properties"
+  },
+  "dataTransparency": {
+    "coverage": {
+      "title": "Data Coverage",
+      "tooltip": "We currently have office data for 7 out of 18 Hong Kong districts. More districts and property types coming soon.",
+      "progressLabel": "{covered} of {total} districts covered",
+      "dataSource": "Source: RVD"
+    },
+    "districts": {
+      "noDataTooltip": "Data coming soon for this district",
+      "withData": "Available",
+      "withoutData": "Coming Soon"
+    },
+    "emptyState": {
+      "title": "No data available for {district}",
+      "description": "We haven't collected data for this district yet. Check back soon as we expand our coverage.",
+      "reason": {
+        "dataCollection": "Data collection in progress",
+        "comingSoon": "Coming in future updates"
+      },
+      "viewAvailableButton": "View available districts"
+    },
+    "coverageInfo": {
+      "title": "Data Coverage",
+      "description": "Our platform aggregates data from multiple sources. Coverage varies by property type and district.",
+      "propertyTypes": {
+        "office": "Office",
+        "retail": "Retail",
+        "industrial": "Industrial"
+      },
+      "districtsLabel": "Districts",
+      "propertiesCount": "{count} properties",
+      "disclaimer": "Data is sourced from public records and may have gaps. We continuously work to improve coverage."
+    },
+    "districtList": {
+      "sections": {
+        "withData": "Available Now",
+        "comingSoon": "Coming Soon"
+      }
+    }
+  },
+  "propertyType": {
+    "types": {
+      "all": "All Types",
+      "office": "Office",
+      "retail": "Retail",
+      "industrial": "Industrial"
+    }
   }
 }

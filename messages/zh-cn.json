@@ -226,6 +226,7 @@
       "grade": "级别",
       "timeRange": "时间范围",
       "metric": "指标",
+      "propertyType": "物业类型",
       "rent": "租金",
       "price": "售价"
     },
@@ -303,5 +304,53 @@
       "title": "前5大地区"
     },
     "properties": "个物业"
+  },
+  "dataTransparency": {
+    "coverage": {
+      "title": "数据覆盖范围",
+      "tooltip": "我们目前有香港18个区中7个区的办公室数据。更多区域和物业类型即将推出。",
+      "progressLabel": "已覆盖 {covered}/{total} 个地区",
+      "dataSource": "来源：差估署"
+    },
+    "districts": {
+      "noDataTooltip": "此地区数据即将推出",
+      "withData": "已有数据",
+      "withoutData": "即将推出"
+    },
+    "emptyState": {
+      "title": "{district} 暂无数据",
+      "description": "我们尚未收集此地区的数据。随着我们扩大覆盖范围，请稍后再查看。",
+      "reason": {
+        "dataCollection": "数据收集中",
+        "comingSoon": "将于未来更新中推出"
+      },
+      "viewAvailableButton": "查看可用地区"
+    },
+    "coverageInfo": {
+      "title": "数据覆盖",
+      "description": "我们的平台整合来自多个来源的数据。覆盖范围因物业类型和地区而异。",
+      "propertyTypes": {
+        "office": "办公室",
+        "retail": "零售",
+        "industrial": "工业"
+      },
+      "districtsLabel": "地区",
+      "propertiesCount": "{count} 个物业",
+      "disclaimer": "数据来自公开记录，可能存在缺口。我们持续努力改进覆盖范围。"
+    },
+    "districtList": {
+      "sections": {
+        "withData": "现已可用",
+        "comingSoon": "即将推出"
+      }
+    }
+  },
+  "propertyType": {
+    "types": {
+      "all": "全部类型",
+      "office": "办公室",
+      "retail": "零售",
+      "industrial": "工业"
+    }
   }
 }

@@ -10,7 +10,21 @@ import {
   KeyMetricsCards,
   DistrictComparisonTable 
 } from '@/components/market-trends'
+import { DistrictCoverageBanner, NoDataEmptyState } from '@/components/data-transparency'
 import { useMarketTrends } from '@/hooks/use-market-trends'
+
+// Districts that have data in the system
+const DISTRICTS_WITH_DATA = [
+  'Central',
+  'Causeway Bay', 
+  'Sheung Wan',
+  'Tsim Sha Tsui',
+  'Mong Kok',
+  'Quarry Bay',
+  'Kwun Tong'
+]
+
+const TOTAL_DISTRICTS = 18
 
 export default function MarketTrendsPage() {
   const t = useTranslations('marketTrends')
@@ -29,6 +43,13 @@ export default function MarketTrendsPage() {
     refetch
   } = useMarketTrends()
 
+  // Check if selected districts have no data
+  const selectedDistrictsWithNoData = filters.districts.filter(
+    d => !DISTRICTS_WITH_DATA.includes(d)
+  )
+  
+  const hasSelectedUnavailableDistricts = selectedDistrictsWithNoData.length > 0
+
   return (
     <div className="flex flex-col min-h-screen">
       {/* Hero Section */}
@@ -46,6 +67,14 @@ export default function MarketTrendsPage() {
         </div>
       </section>
 
+      {/* Coverage Banner */}
+      <div className="container mb-4">
+        <DistrictCoverageBanner 
+          coveredDistricts={DISTRICTS_WITH_DATA.length}
+          totalDistricts={TOTAL_DISTRICTS}
+        />
+      </div>
+
       {/* Filter Control Bar */}
       <div className="container">
         <FilterControlBar
@@ -55,6 +84,8 @@ export default function MarketTrendsPage() {
           onUpdateFilters={updateFilters}
           onResetFilters={resetFilters}
           isLoading={isLoading}
+          showPropertyTypeFilter={true}
+          districtsWithData={DISTRICTS_WITH_DATA}
         />
       </div>
 
@@ -72,6 +103,16 @@ export default function MarketTrendsPage() {
                 </Button>
               </AlertDescription>
             </Alert>
+          )}
+
+          {/* No Data Empty State for unavailable districts */}
+          {hasSelectedUnavailableDistricts && !isLoading && (
+            <NoDataEmptyState 
+              districtName={selectedDistrictsWithNoData.join(', ')}
+              onViewAvailableDistricts={() => {
+                updateFilters({ districts: [] })
+              }}
+            />
           )}
 
           {/* Key Metrics */}

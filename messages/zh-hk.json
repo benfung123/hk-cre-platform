@@ -226,6 +226,7 @@
       "grade": "級別",
       "timeRange": "時間範圍",
       "metric": "指標",
+      "propertyType": "物業類型",
       "rent": "租金",
       "price": "售價"
     },
@@ -303,5 +304,53 @@
       "title": "前5大地區"
     },
     "properties": "個物業"
+  },
+  "dataTransparency": {
+    "coverage": {
+      "title": "數據覆蓋範圍",
+      "tooltip": "我們目前有香港18個區中7個區的辦公室數據。更多區域和物業類型即將推出。",
+      "progressLabel": "已覆蓋 {covered}/{total} 個地區",
+      "dataSource": "來源：差估署"
+    },
+    "districts": {
+      "noDataTooltip": "此地區數據即將推出",
+      "withData": "已有數據",
+      "withoutData": "即將推出"
+    },
+    "emptyState": {
+      "title": "{district} 暫無數據",
+      "description": "我們尚未收集此地區的數據。隨著我們擴大覆蓋範圍，請稍後再查看。",
+      "reason": {
+        "dataCollection": "數據收集中",
+        "comingSoon": "將於未來更新中推出"
+      },
+      "viewAvailableButton": "查看可用地區"
+    },
+    "coverageInfo": {
+      "title": "數據覆蓋",
+      "description": "我們的平台整合來自多個來源的數據。覆蓋範圍因物業類型和地區而異。",
+      "propertyTypes": {
+        "office": "辦公室",
+        "retail": "零售",
+        "industrial": "工業"
+      },
+      "districtsLabel": "地區",
+      "propertiesCount": "{count} 個物業",
+      "disclaimer": "數據來自公開記錄，可能存在缺口。我們持續努力改進覆蓋範圍。"
+    },
+    "districtList": {
+      "sections": {
+        "withData": "現已可用",
+        "comingSoon": "即將推出"
+      }
+    }
+  },
+  "propertyType": {
+    "types": {
+      "all": "全部類型",
+      "office": "辦公室",
+      "retail": "零售",
+      "industrial": "工業"
+    }
   }
 }

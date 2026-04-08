@@ -11,11 +11,40 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Search, X } from 'lucide-react'
+import { Search, X, CheckCircle2, MapPinOff } from 'lucide-react'
+import { cn } from '@/lib/utils'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 
 interface PropertyFiltersProps {
   districts: string[]
 }
+
+// All 18 Hong Kong districts with data availability
+const ALL_DISTRICTS = [
+  { name: 'Central', hasData: true },
+  { name: 'Causeway Bay', hasData: true },
+  { name: 'Sheung Wan', hasData: true },
+  { name: 'Tsim Sha Tsui', hasData: true },
+  { name: 'Mong Kok', hasData: true },
+  { name: 'Quarry Bay', hasData: true },
+  { name: 'Kwun Tong', hasData: true },
+  { name: 'Admiralty', hasData: false },
+  { name: 'Wan Chai', hasData: false },
+  { name: 'Yau Ma Tei', hasData: false },
+  { name: 'North Point', hasData: false },
+  { name: 'Kowloon Bay', hasData: false },
+  { name: 'Cheung Sha Wan', hasData: false },
+  { name: 'Lai Chi Kok', hasData: false },
+  { name: 'Tsuen Wan', hasData: false },
+  { name: 'Sha Tin', hasData: false },
+  { name: 'Tai Koo', hasData: false },
+  { name: 'Aberdeen', hasData: false },
+]
 
 export function PropertyFilters({ districts }: PropertyFiltersProps) {
   const t = useTranslations()
@@ -25,6 +54,7 @@ export function PropertyFilters({ districts }: PropertyFiltersProps) {
   const currentDistrict = searchParams.get('district') || ''
   const currentGrade = searchParams.get('grade') || ''
   const currentSearch = searchParams.get('search') || ''
+  const currentType = searchParams.get('type') || ''
 
   // Helper function to get translated district name
   const getDistrictTranslation = (district: string) => {
@@ -46,67 +76,114 @@ export function PropertyFilters({ districts }: PropertyFiltersProps) {
     router.push('/properties')
   }
 
-  const hasFilters = currentDistrict || currentGrade || currentSearch
+  const hasFilters = currentDistrict || currentGrade || currentSearch || currentType
+
+  // Filter to only show districts that exist in the database
+  const availableDistrictSet = new Set(districts)
+  const districtsToShow = ALL_DISTRICTS.filter(d => availableDistrictSet.has(d.name))
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="flex flex-col sm:flex-row gap-4">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            type="search"
-            placeholder={t('properties.filters.searchPlaceholder')}
-            defaultValue={currentSearch}
-            onChange={(e) => {
-              const timeoutId = setTimeout(() => {
-                handleFilterChange('search', e.target.value)
-              }, 300)
-              return () => clearTimeout(timeoutId)
-            }}
-            className="pl-10"
-          />
+    <TooltipProvider>
+      <div className="flex flex-col gap-4">
+        <div className="flex flex-col sm:flex-row gap-4">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              type="search"
+              placeholder={t('properties.filters.searchPlaceholder')}
+              defaultValue={currentSearch}
+              onChange={(e) => {
+                const timeoutId = setTimeout(() => {
+                  handleFilterChange('search', e.target.value)
+                }, 300)
+                return () => clearTimeout(timeoutId)
+              }}
+              className="pl-10"
+            />
+          </div>
+
+          <Select
+            value={currentDistrict}
+            onValueChange={(value) => handleFilterChange('district', value || '')}
+          >
+            <SelectTrigger className="w-full sm:w-56">
+              <SelectValue placeholder={t('properties.filters.allDistricts')} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="">{t('properties.filters.allDistricts')}</SelectItem>
+              <div className="px-2 py-1.5 text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                {t('dataTransparency.districtList.sections.withData')}
+              </div>
+              {districtsToShow.filter(d => d.hasData).map((district) => (
+                <SelectItem key={district.name} value={district.name} className="flex items-center gap-2">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
+                    <span>{getDistrictTranslation(district.name)}</span>
+                  </div>
+                </SelectItem>
+              ))}
+              <div className="px-2 py-1.5 text-xs font-medium text-muted-foreground uppercase tracking-wider mt-1">
+                {t('dataTransparency.districtList.sections.comingSoon')}
+              </div>
+              {districtsToShow.filter(d => !d.hasData).map((district) => (
+                <Tooltip key={district.name}>
+                  <TooltipTrigger asChild>
+                    <div className="px-2 py-1.5 text-sm text-muted-foreground opacity-50 cursor-not-allowed flex items-center gap-2">
+                      <MapPinOff className="h-3.5 w-3.5" />
+                      <span>{getDistrictTranslation(district.name)}</span>
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p className="text-xs">{t('dataTransparency.districts.noDataTooltip')}</p>
+                  </TooltipContent>
+                </Tooltip>
+              ))}
+            </SelectContent>
+          </Select>
+
+          <Select
+            value={currentType}
+            onValueChange={(value) => handleFilterChange('type', value || '')}
+          >
+            <SelectTrigger className="w-full sm:w-40">
+              <SelectValue placeholder={t('propertyType.types.all')} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="">{t('propertyType.types.all')}</SelectItem>
+              <SelectItem value="office">{t('propertyType.types.office')}</SelectItem>
+              <SelectItem value="retail">{t('propertyType.types.retail')}</SelectItem>
+              <SelectItem value="industrial">{t('propertyType.types.industrial')}</SelectItem>
+            </SelectContent>
+          </Select>
+
+          <Select
+            value={currentGrade}
+            onValueChange={(value) => handleFilterChange('grade', value || '')}
+            disabled={currentType !== '' && currentType !== 'office'}
+          >
+            <SelectTrigger className={cn(
+              "w-full sm:w-40",
+              currentType !== '' && currentType !== 'office' && "opacity-50"
+            )}>
+              <SelectValue placeholder={t('properties.filters.allGrades')} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="">{t('properties.filters.allGrades')}</SelectItem>
+              <SelectItem value="A+">A+</SelectItem>
+              <SelectItem value="A">A</SelectItem>
+              <SelectItem value="B">B</SelectItem>
+              <SelectItem value="C">C</SelectItem>
+            </SelectContent>
+          </Select>
+
+          {hasFilters && (
+            <Button variant="ghost" onClick={clearFilters}>
+              <X className="h-4 w-4 mr-2" />
+              {t('properties.filters.clear')}
+            </Button>
+          )}
         </div>
-
-        <Select
-          value={currentDistrict}
-          onValueChange={(value) => handleFilterChange('district', value || '')}
-        >
-          <SelectTrigger className="w-full sm:w-48">
-            <SelectValue placeholder={t('properties.filters.allDistricts')} />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="">{t('properties.filters.allDistricts')}</SelectItem>
-            {districts.map((district) => (
-              <SelectItem key={district} value={district}>
-                {getDistrictTranslation(district)}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-
-        <Select
-          value={currentGrade}
-          onValueChange={(value) => handleFilterChange('grade', value || '')}
-        >
-          <SelectTrigger className="w-full sm:w-40">
-            <SelectValue placeholder={t('properties.filters.allGrades')} />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="">{t('properties.filters.allGrades')}</SelectItem>
-            <SelectItem value="A+">A+</SelectItem>
-            <SelectItem value="A">A</SelectItem>
-            <SelectItem value="B">B</SelectItem>
-            <SelectItem value="C">C</SelectItem>
-          </SelectContent>
-        </Select>
-
-        {hasFilters && (
-          <Button variant="ghost" onClick={clearFilters}>
-            <X className="h-4 w-4 mr-2" />
-            {t('properties.filters.clear')}
-          </Button>
-        )}
       </div>
-    </div>
+    </TooltipProvider>
   )
 }
