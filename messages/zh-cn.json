@@ -124,11 +124,25 @@
   "compare": {
     "pageTitle": "比较物业",
     "pageDescription": "并排比较最多3个物业，找出最佳投资机会。",
-    "add": "比较",
+    "add": "比较物业",
     "remove": "移除",
     "maxReached": "最多可比较3个物业",
     "propertiesSelected": "已选择 {count} 个物业",
-    "compareButton": "比较"
+    "compareButton": "比较物业",
+    "backToProperties": "返回物业列表",
+    "clearAll": "清除全部",
+    "built": "落成年份",
+    "rentPerSqft": "租金/平方呎",
+    "latest": "最新:",
+    "average": "平均:",
+    "noRentData": "没有租金数据",
+    "building": "大厦",
+    "totalArea": "总楼面:",
+    "floors": "层数:",
+    "viewDetails": "查看详情",
+    "emptyTitle": "没有选择物业",
+    "emptyDescription": "从列表中选择物业以进行比较。",
+    "browseProperties": "浏览物业"
   },
   "favorites": {
     "pageTitle": "我的收藏",
@@ -144,15 +158,5 @@
     "trackingCount": "正在追踪 {count} 个物业",
     "exploreMore": "探索更多",
     "browseAll": "浏览全部物业 →"
-  }
-}
-��藏",
-    "backToProperties": "返回物业列表",
-    "savedCount": "已收藏 {count} 个物业",
-    "emptyTitle": "暂无收藏物业",
-    "emptyDescription": "将物业加入收藏夹以追踪和比较不同选项。",
-    "browseButton": "浏览物业",
-    "save": "收藏",
-    "saved": "已收藏"
   }
 }

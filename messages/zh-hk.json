@@ -124,11 +124,25 @@
   "compare": {
     "pageTitle": "比較物業",
     "pageDescription": "並排比較最多3個物業，找出最佳投資機會。",
-    "add": "比較",
+    "add": "比較物業",
     "remove": "移除",
     "maxReached": "最多可比較3個物業",
     "propertiesSelected": "已選擇 {count} 個物業",
-    "compareButton": "比較"
+    "compareButton": "比較物業",
+    "backToProperties": "返回物業列表",
+    "clearAll": "清除全部",
+    "built": "落成年份",
+    "rentPerSqft": "租金/平方呎",
+    "latest": "最新:",
+    "average": "平均:",
+    "noRentData": "沒有租金數據",
+    "building": "大廈",
+    "totalArea": "總樓面:",
+    "floors": "層數:",
+    "viewDetails": "查看詳情",
+    "emptyTitle": "沒有選擇物業",
+    "emptyDescription": "從列表中選擇物業以進行比較。",
+    "browseProperties": "瀏覽物業"
   },
   "favorites": {
     "pageTitle": "我的收藏",
@@ -144,15 +158,5 @@
     "trackingCount": "正在追蹤 {count} 個物業",
     "exploreMore": "探索更多",
     "browseAll": "瀏覽全部物業 →"
-  }
-}
-��藏",
-    "backToProperties": "返回物業列表",
-    "savedCount": "已收藏 {count} 個物業",
-    "emptyTitle": "暫無收藏物業",
-    "emptyDescription": "將物業加入收藏夾以追蹤和比較不同選項。",
-    "browseButton": "瀏覽物業",
-    "save": "收藏",
-    "saved": "已收藏"
   }
 }
