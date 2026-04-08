@@ -6,17 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge'
 import { Search, MapPin } from 'lucide-react'
 import { getProperties, getMarketStats, getDistrictStats } from '@/lib/data'
-import dynamic from 'next/dynamic'
-
-// Dynamically import BuildingMap with SSR disabled to avoid window access issues
-const BuildingMap = dynamic(() => import('@/components/BuildingMap').then(mod => mod.BuildingMap), {
-  ssr: false,
-  loading: () => (
-    <div className="w-full h-[450px] bg-muted/50 rounded-lg flex items-center justify-center">
-      <div className="text-muted-foreground">Loading map...</div>
-    </div>
-  )
-})
+import { BuildingMapWrapper } from '@/components/building-map-wrapper'
 
 // Force dynamic rendering since we need database access
 export const dynamic = 'force-dynamic'
@@ -117,7 +107,7 @@ export default async function HomePage() {
             </Link>
           </div>
           
-          <BuildingMap 
+          <BuildingMapWrapper 
             properties={featuredProperties}
             height="450px"
             showFilters={true}
