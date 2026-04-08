@@ -125,14 +125,14 @@ export function PropertyFilters({ districts, hasResults = true }: PropertyFilter
             onValueChange={(value) => handleFilterChange('district', value || '')}
           >
             <SelectTrigger className="w-full sm:w-56">
-              <SelectValue placeholder={isRetailOrIndustrial ? t('properties.filters.allRegions') || t('properties.filters.allDistricts') : t('properties.filters.allDistricts')} />
+              <SelectValue placeholder={t('properties.filters.allDistricts')} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">{isRetailOrIndustrial ? t('properties.filters.allRegions') || t('properties.filters.allDistricts') : t('properties.filters.allDistricts')}</SelectItem>
+              <SelectItem value="">{t('properties.filters.allDistricts')}</SelectItem>
               <div className="px-2 py-1.5 text-xs font-medium text-muted-foreground uppercase tracking-wider">
                 {t('dataTransparency.districtList.sections.withData')}
               </div>
-              {locationsToShow.filter(d => d.hasData).map((location) => (
+              {filteredLocations.filter(d => d.hasData).map((location) => (
                 <SelectItem key={location.name} value={location.name} className="flex items-center gap-2">
                   <div className="flex items-center gap-2">
                     <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
@@ -145,7 +145,7 @@ export function PropertyFilters({ districts, hasResults = true }: PropertyFilter
                   <div className="px-2 py-1.5 text-xs font-medium text-muted-foreground uppercase tracking-wider mt-1">
                     {t('dataTransparency.districtList.sections.comingSoon')}
                   </div>
-                  {locationsToShow.filter(d => !d.hasData).map((district) => (
+                  {filteredLocations.filter(d => !d.hasData).map((district) => (
                     <Tooltip key={district.name}>
                       <TooltipTrigger asChild>
                         <div className="px-2 py-1.5 text-sm text-muted-foreground opacity-50 cursor-not-allowed flex items-center gap-2">
