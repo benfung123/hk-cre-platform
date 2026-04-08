@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useCallback } from 'react'
 import type { Property, Transaction, Tenancy } from '@/types'
 import { supabase } from '@/lib/supabase/client'
 
@@ -21,7 +21,7 @@ export function usePropertyData() {
     }
 
     return data
-  }, [])
+  }, []) // Empty deps ensures stable function reference
 
   const getPropertyTransactions = useCallback(async (propertyId: string): Promise<Transaction[]> => {
     const { data, error } = await supabase

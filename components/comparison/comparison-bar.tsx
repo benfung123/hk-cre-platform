@@ -60,7 +60,8 @@ export function ComparisonBar() {
     }
 
     loadProperties()
-  }, [compareList, getPropertyById])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [compareList]) // getPropertyById is stable (useCallback with [] deps) - only reload when compareList changes
 
   // Check if any properties can be added to favorites
   useEffect(() => {
