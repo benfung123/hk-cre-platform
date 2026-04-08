@@ -10,7 +10,6 @@ import {
   ArrowLeft, 
   MapPin, 
   Building2, 
-  Calendar, 
   DollarSign, 
   Scale,
   X,
@@ -39,6 +38,14 @@ const gradeColors: Record<string, string> = {
   'C': 'bg-orange-500 text-white'
 }
 
+// Grade ranking for comparison (higher is better)
+const gradeRank: Record<string, number> = {
+  'A+': 4,
+  'A': 3,
+  'B': 2,
+  'C': 1
+}
+
 export function ComparisonView() {
   const t = useTranslations('compare')
   const tp = useTranslations('propertyDetail')
@@ -63,7 +70,7 @@ export function ComparisonView() {
           return property ? { ...property, transactions } : null
         })
       )
-      setProperties(loaded.filter((p): p is PropertyWithTransactions => p !== null))
+      setProperties(loaded.filter(p => p !== null) as PropertyWithTransactions[])
       setLoading(false)
     }
 
@@ -95,19 +102,36 @@ export function ComparisonView() {
     return sales.length > 0 ? sales[0].price_per_sqft : null
   }
 
+  // Calculate cap rate (estimated: annual rent / price)
+  const getCapRate = (transactions: Transaction[]) => {
+    const avgRent = getAvgRent(transactions)
+    const latestPrice = getLatestSalePrice(transactions)
+    if (!avgRent || !latestPrice || latestPrice === 0) return null
+    // Assuming 12 months rent, cap rate = (monthly rent * 12) / price
+    // Rent and price are both per sqft, so calculation works
+    return ((avgRent * 12) / latestPrice) * 100
+  }
+
   const rents = properties.map(p => getLatestRent(p.transactions)).filter((r): r is number => r !== null)
   const prices = properties.map(p => getLatestSalePrice(p.transactions)).filter((p): p is number => p !== null)
+  const capRates = properties.map(p => getCapRate(p.transactions)).filter((c): c is number => c !== null)
   const years = properties.map(p => p.year_built).filter((y): y is number => y !== null)
   const areas = properties.map(p => p.total_sqft).filter((a): a is number => a !== null)
+  const grades = properties.map(p => p.grade).filter(g => g !== null) as string[]
   
   const maxRent = rents.length > 0 ? Math.max(...rents) : null
   const minRent = rents.length > 0 ? Math.min(...rents) : null
   const maxPrice = prices.length > 0 ? Math.max(...prices) : null
   const minPrice = prices.length > 0 ? Math.min(...prices) : null
+  const maxCapRate = capRates.length > 0 ? Math.max(...capRates) : null
+  const minCapRate = capRates.length > 0 ? Math.min(...capRates) : null
   const newestYear = years.length > 0 ? Math.max(...years) : null
   const oldestYear = years.length > 0 ? Math.min(...years) : null
   const largestArea = areas.length > 0 ? Math.max(...areas) : null
   const smallestArea = areas.length > 0 ? Math.min(...areas) : null
+  const bestGrade = grades.length > 0 
+    ? grades.reduce((best, g) => (gradeRank[g] > gradeRank[best] ? g : best), grades[0])
+    : null
 
   // Get grid layout based on number of properties
   const getGridClass = () => {
@@ -145,31 +169,29 @@ export function ComparisonView() {
           <CardContent className="p-4">
             <div className="flex items-center gap-2 mb-3">
               <BarChart3 className="h-4 w-4 text-muted-foreground" />
-              <span className="text-sm font-medium">{t('comparisonSummary', { defaultValue: 'Comparison Summary' })}</span>
+              <span className="text-sm font-medium">{t('comparisonSummary')}</span>
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
               {rents.length > 0 && (
-                <>
-                  <div>
-                    <span className="text-muted-foreground">{t('rentRange', { defaultValue: 'Rent Range' })}:</span>
-                    <div className="font-medium">${minRent?.toFixed(2)} - ${maxRent?.toFixed(2)}</div>
-                  </div>
-                </>
+                <div>
+                  <span className="text-muted-foreground">{t('rentRange')}:</span>
+                  <div className="font-medium">${minRent?.toFixed(2)} - ${maxRent?.toFixed(2)}</div>
+                </div>
               )}
               {years.length > 0 && (
                 <div>
-                  <span className="text-muted-foreground">{t('yearRange', { defaultValue: 'Year Range' })}:</span>
+                  <span className="text-muted-foreground">{t('yearRange')}:</span>
                   <div className="font-medium">{oldestYear} - {newestYear}</div>
                 </div>
               )}
               {areas.length > 0 && (
                 <div>
-                  <span className="text-muted-foreground">{t('areaRange', { defaultValue: 'Area Range' })}:</span>
+                  <span className="text-muted-foreground">{t('areaRange')}:</span>
                   <div className="font-medium">{(smallestArea! / 1000000).toFixed(1)}M - {(largestArea! / 1000000).toFixed(1)}M sqft</div>
                 </div>
               )}
               <div>
-                <span className="text-muted-foreground">{t('districts', { defaultValue: 'Districts' })}:</span>
+                <span className="text-muted-foreground">{t('districts')}:</span>
                 <div className="font-medium">{[...new Set(properties.map(p => p.district))].length}</div>
               </div>
             </div>
@@ -183,14 +205,31 @@ export function ComparisonView() {
           const latestRent = getLatestRent(property.transactions)
           const avgRent = getAvgRent(property.transactions)
           const latestPrice = getLatestSalePrice(property.transactions)
+          const capRate = getCapRate(property.transactions)
           
-          // Determine highlighting
-          const rentIsHighest = latestRent !== null && maxRent !== null && latestRent === maxRent && properties.length > 1
-          const rentIsLowest = latestRent !== null && minRent !== null && latestRent === minRent && properties.length > 1
-          const priceIsHighest = latestPrice !== null && maxPrice !== null && latestPrice === maxPrice && properties.length > 1
-          const priceIsLowest = latestPrice !== null && minPrice !== null && latestPrice === minPrice && properties.length > 1
-          const isNewest = property.year_built !== null && newestYear !== null && property.year_built === newestYear && properties.length > 1
-          const isLargest = property.total_sqft !== null && largestArea !== null && property.total_sqft === largestArea && properties.length > 1
+          // Determine highlighting based on "better" criteria
+          // Lower rent = better (green), higher rent = worse (red)
+          const rentIsBetter = latestRent !== null && minRent !== null && latestRent === minRent && properties.length > 1
+          const rentIsWorse = latestRent !== null && maxRent !== null && latestRent === maxRent && properties.length > 1
+          
+          // Lower price = better (green), higher price = worse (red)
+          const priceIsBetter = latestPrice !== null && minPrice !== null && latestPrice === minPrice && properties.length > 1
+          const priceIsWorse = latestPrice !== null && maxPrice !== null && latestPrice === maxPrice && properties.length > 1
+          
+          // Higher cap rate = better (green), lower cap rate = worse (red)
+          const capRateIsBetter = capRate !== null && maxCapRate !== null && capRate === maxCapRate && properties.length > 1
+          const capRateIsWorse = capRate !== null && minCapRate !== null && capRate === minCapRate && properties.length > 1
+          
+          // Newer building = better (green)
+          const yearIsBetter = property.year_built !== null && newestYear !== null && property.year_built === newestYear && properties.length > 1
+          const yearIsWorse = property.year_built !== null && oldestYear !== null && property.year_built === oldestYear && properties.length > 1
+          
+          // Larger area = neutral (just highlight the largest)
+          const isLargestArea = property.total_sqft !== null && largestArea !== null && property.total_sqft === largestArea && properties.length > 1
+          const isSmallestArea = property.total_sqft !== null && smallestArea !== null && property.total_sqft === smallestArea && properties.length > 1
+          
+          // Grade comparison
+          const gradeIsBetter = bestGrade !== null && property.grade === bestGrade && properties.length > 1
           
           return (
             <Card key={property.id} className="relative overflow-hidden">
@@ -205,8 +244,7 @@ export function ComparisonView() {
               </Button>
 
               {/* Property Image Placeholder */}
-              <div className="h-32 bg-gradient-to-br from-blue-100 to-blue-200 dark:from-blue-900 dark:to-blue-800 flex items-center justify-center relative"
->
+              <div className="h-32 bg-gradient-to-br from-blue-100 to-blue-200 dark:from-blue-900 dark:to-blue-800 flex items-center justify-center relative">
                 <Building2 className="h-12 w-12 text-blue-400 dark:text-blue-600" />
                 <div className="absolute top-2 left-2">
                   <Badge className={cn("font-bold", gradeColors[property.grade] || 'bg-gray-500')}>
@@ -221,10 +259,34 @@ export function ComparisonView() {
               </CardHeader>
               
               <CardContent className="space-y-4">
-                {/* Location */}
+                {/* District - Neutral, no highlighting */}
                 <div className="flex items-center gap-2 text-sm">
                   <MapPin className="h-4 w-4 text-muted-foreground" />
                   <span>{property.district}</span>
+                </div>
+
+                <Separator />
+
+                {/* Grade Comparison */}
+                <div className="space-y-2">
+                  <h4 className="font-medium flex items-center gap-2 text-sm">
+                    <Building2 className="h-4 w-4" />
+                    {t('grade')}
+                  </h4>
+                  <div className={cn(
+                    "flex items-center justify-between p-2 rounded",
+                    gradeIsBetter && "bg-green-100/50 dark:bg-green-950/30"
+                  )}>
+                    <span className="text-sm text-muted-foreground">{t('grade')}</span>
+                    <div className="flex items-center gap-2">
+                      <Badge className={cn(gradeColors[property.grade] || 'bg-gray-500')}>
+                        {property.grade}
+                      </Badge>
+                      {gradeIsBetter && properties.length > 1 && (
+                        <span className="text-xs text-green-600 font-medium">{t('better')}</span>
+                      )}
+                    </div>
+                  </div>
                 </div>
 
                 <Separator />
@@ -233,28 +295,28 @@ export function ComparisonView() {
                 <div className="space-y-2">
                   <h4 className="font-medium flex items-center gap-2 text-sm">
                     <DollarSign className="h-4 w-4" />
-                    {t('rentPerSqft')}
+                    {t('rent')}
                   </h4>
                   
                   {latestRent ? (
                     <div className="space-y-1">
                       <div className={cn(
                         "flex items-center justify-between p-2 rounded",
-                        rentIsHighest && "bg-red-50 dark:bg-red-950/30",
-                        rentIsLowest && "bg-green-50 dark:bg-green-950/30"
+                        rentIsBetter && "bg-green-100/50 dark:bg-green-950/30",
+                        rentIsWorse && "bg-red-100/50 dark:bg-red-950/30"
                       )}>
                         <span className="text-sm text-muted-foreground">{t('latest')}</span>
                         <div className="flex items-center gap-2">
                           <span className={cn(
                             "font-medium",
-                            rentIsHighest && "text-red-600 dark:text-red-400",
-                            rentIsLowest && "text-green-600 dark:text-green-400"
+                            rentIsBetter && "text-green-600 dark:text-green-400",
+                            rentIsWorse && "text-red-600 dark:text-red-400"
                           )}>
                             ${latestRent.toFixed(2)}
                           </span>
-                          {rentIsHighest && <TrendingUp className="h-4 w-4 text-red-500" />}
-                          {rentIsLowest && <TrendingDown className="h-4 w-4 text-green-500" />}
-                          {!rentIsHighest && !rentIsLowest && properties.length > 1 && <Minus className="h-4 w-4 text-gray-400" />}
+                          {rentIsBetter && <TrendingDown className="h-4 w-4 text-green-500" />}
+                          {rentIsWorse && <TrendingUp className="h-4 w-4 text-red-500" />}
+                          {!rentIsBetter && !rentIsWorse && properties.length > 1 && <Minus className="h-4 w-4 text-gray-400" />}
                         </div>
                       </div>
                       
@@ -278,24 +340,55 @@ export function ComparisonView() {
                     <div className="space-y-2">
                       <h4 className="font-medium flex items-center gap-2 text-sm">
                         <DollarSign className="h-4 w-4" />
-                        {t('pricePerSqft', { defaultValue: 'Price/sqft' })}
+                        {t('price')}
                       </h4>
                       <div className={cn(
                         "flex items-center justify-between p-2 rounded",
-                        priceIsHighest && "bg-red-50 dark:bg-red-950/30",
-                        priceIsLowest && "bg-green-50 dark:bg-green-950/30"
+                        priceIsBetter && "bg-green-100/50 dark:bg-green-950/30",
+                        priceIsWorse && "bg-red-100/50 dark:bg-red-950/30"
                       )}>
                         <span className="text-sm text-muted-foreground">{t('latest')}</span>
                         <div className="flex items-center gap-2">
                           <span className={cn(
                             "font-medium",
-                            priceIsHighest && "text-red-600 dark:text-red-400",
-                            priceIsLowest && "text-green-600 dark:text-green-400"
+                            priceIsBetter && "text-green-600 dark:text-green-400",
+                            priceIsWorse && "text-red-600 dark:text-red-400"
                           )}>
                             ${latestPrice.toLocaleString()}
                           </span>
-                          {priceIsHighest && <TrendingUp className="h-4 w-4 text-red-500" />}
-                          {priceIsLowest && <TrendingDown className="h-4 w-4 text-green-500" />}
+                          {priceIsBetter && <TrendingDown className="h-4 w-4 text-green-500" />}
+                          {priceIsWorse && <TrendingUp className="h-4 w-4 text-red-500" />}
+                        </div>
+                      </div>
+                    </div>
+                    <Separator />
+                  </>
+                )}
+
+                {/* Cap Rate (if calculable) */}
+                {capRate && (
+                  <>
+                    <div className="space-y-2">
+                      <h4 className="font-medium flex items-center gap-2 text-sm">
+                        <TrendingUp className="h-4 w-4" />
+                        {t('capRate', { defaultValue: 'Cap Rate' })}
+                      </h4>
+                      <div className={cn(
+                        "flex items-center justify-between p-2 rounded",
+                        capRateIsBetter && "bg-green-100/50 dark:bg-green-950/30",
+                        capRateIsWorse && "bg-red-100/50 dark:bg-red-950/30"
+                      )}>
+                        <span className="text-sm text-muted-foreground">{t('estimated')}</span>
+                        <div className="flex items-center gap-2">
+                          <span className={cn(
+                            "font-medium",
+                            capRateIsBetter && "text-green-600 dark:text-green-400",
+                            capRateIsWorse && "text-red-600 dark:text-red-400"
+                          )}>
+                            {capRate.toFixed(2)}%
+                          </span>
+                          {capRateIsBetter && <TrendingUp className="h-4 w-4 text-green-500" />}
+                          {capRateIsWorse && <TrendingDown className="h-4 w-4 text-red-500" />}
                         </div>
                       </div>
                     </div>
@@ -314,10 +407,18 @@ export function ComparisonView() {
                     {property.total_sqft && (
                       <div className={cn(
                         "flex justify-between p-1 rounded",
-                        isLargest && "bg-green-50 dark:bg-green-950/30 font-medium"
+                        isLargestArea && "bg-green-100/50 dark:bg-green-950/30",
+                        isSmallestArea && "bg-muted"
                       )}>
-                        <span className="text-muted-foreground">{tp('totalFloorArea')}</span>
-                        <span>{(property.total_sqft / 1000000).toFixed(2)}M sqft</span>
+                        <span className="text-muted-foreground">{t('area')}</span>
+                        <span className={cn(
+                          isLargestArea && "font-medium text-green-600 dark:text-green-400"
+                        )}>
+                          {(property.total_sqft / 1000000).toFixed(2)}M sqft
+                          {isLargestArea && properties.length > 1 && (
+                            <span className="ml-1 text-xs text-green-600">{t('better')}</span>
+                          )}
+                        </span>
                       </div>
                     )}
                     {property.floors && (
@@ -329,10 +430,22 @@ export function ComparisonView() {
                     {property.year_built && (
                       <div className={cn(
                         "flex justify-between p-1 rounded",
-                        isNewest && "bg-green-50 dark:bg-green-950/30 font-medium"
+                        yearIsBetter && "bg-green-100/50 dark:bg-green-950/30",
+                        yearIsWorse && "bg-red-100/50 dark:bg-red-950/30"
                       )}>
-                        <span className="text-muted-foreground">{t('built')}</span>
-                        <span>{property.year_built}</span>
+                        <span className="text-muted-foreground">{t('yearBuilt')}</span>
+                        <span className={cn(
+                          yearIsBetter && "font-medium text-green-600 dark:text-green-400",
+                          yearIsWorse && "font-medium text-red-600 dark:text-red-400"
+                        )}>
+                          {property.year_built}
+                          {yearIsBetter && properties.length > 1 && (
+                            <span className="ml-1 text-xs">{t('better')}</span>
+                          )}
+                          {yearIsWorse && properties.length > 1 && (
+                            <span className="ml-1 text-xs">{t('worse')}</span>
+                          )}
+                        </span>
                       </div>
                     )}
                   </div>
@@ -342,17 +455,17 @@ export function ComparisonView() {
 
                 {/* Recent Transactions Summary */}
                 <div className="space-y-2">
-                  <h4 className="font-medium text-sm">{t('recentTransactions', { defaultValue: 'Recent Transactions' })}</h4>
+                  <h4 className="font-medium text-sm">{t('recentTransactions')}</h4>
                   {property.transactions.length > 0 ? (
                     <div className="space-y-1">
-                      {property.transactions.slice(0, 3).map((t) => (
-                        <div key={t.id} className="flex justify-between text-sm p-1 bg-muted rounded">
+                      {property.transactions.slice(0, 3).map((transaction) => (
+                        <div key={transaction.id} className="flex justify-between text-sm p-1 bg-muted rounded">
                           <span className="text-muted-foreground">
-                            {new Date(t.date).toLocaleDateString('en-HK', { month: 'short', year: 'numeric' })}
+                            {new Date(transaction.date).toLocaleDateString('en-HK', { month: 'short', year: 'numeric' })}
                           </span>
                           <span className="font-medium">
-                            {t.type === 'lease' ? 'Lease' : 'Sale'}
-                            {t.price_per_sqft && ` @ $${t.price_per_sqft.toFixed(0)}`}
+                            {transaction.type === 'lease' ? 'Lease' : 'Sale'}
+                            {transaction.price_per_sqft && ` @ $${transaction.price_per_sqft.toFixed(0)}`}
                           </span>
                         </div>
                       ))}

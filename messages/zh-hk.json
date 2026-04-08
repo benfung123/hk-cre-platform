@@ -155,7 +155,20 @@
     "areaRange": "面積範圍",
     "districts": "地區數量",
     "recentTransactions": "最近成交",
-    "noTransactions": "沒有成交紀錄"
+    "noTransactions": "沒有成交紀錄",
+    "properties": "物業",
+    "rent": "租金",
+    "price": "售價",
+    "grade": "級別",
+    "yearBuilt": "落成年份",
+    "area": "面積",
+    "district": "地區",
+    "better": "較佳",
+    "worse": "較差",
+    "addMore": "添加更多",
+    "emptyState": "選擇物業進行比較",
+    "capRate": "回報率",
+    "estimated": "估算"
   },
   "favorites": {
     "pageTitle": "我的收藏",

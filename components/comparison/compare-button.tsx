@@ -1,6 +1,6 @@
 'use client'
 
-import { Scale, X, Check } from 'lucide-react'
+import { Scale, Check } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useCompare } from '@/hooks/use-compare'
 import { cn } from '@/lib/utils'

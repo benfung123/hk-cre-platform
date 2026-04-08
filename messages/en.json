@@ -155,7 +155,20 @@
     "areaRange": "Area Range",
     "districts": "Districts",
     "recentTransactions": "Recent Transactions",
-    "noTransactions": "No transactions recorded"
+    "noTransactions": "No transactions recorded",
+    "properties": "Properties",
+    "rent": "Rent",
+    "price": "Price",
+    "grade": "Grade",
+    "yearBuilt": "Year Built",
+    "area": "Area",
+    "district": "District",
+    "better": "Better",
+    "worse": "Worse",
+    "addMore": "Add More",
+    "emptyState": "Select properties to compare",
+    "capRate": "Cap Rate",
+    "estimated": "Estimated"
   },
   "favorites": {
     "pageTitle": "My Watchlist",

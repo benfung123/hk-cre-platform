@@ -12,6 +12,7 @@ import { getPropertyById, getPropertyTransactions, getPropertyTenancies, getDist
 import { PropertyLocation } from '@/components/PropertyLocation'
 import { PriceHistoryChart } from '@/components/charts/price-history-chart'
 import { SourceBadge, DataFreshnessIndicator, DataProvenanceDrawer } from '@/components/data-source'
+import { CompareButton } from '@/components/comparison/compare-button'
 import { FavoriteButton } from '@/components/favorites/favorite-button'
 import { PropertyStructuredData } from '@/components/seo/PropertyStructuredData'
 
@@ -137,6 +138,7 @@ export default async function PropertyPage({ params }: PropertyPageProps) {
               </div>
             </div>
             <div className="flex items-center gap-2">
+              <CompareButton propertyId={property.id} showLabel />
               <FavoriteButton propertyId={property.id} showLabel />
               <Badge className="text-lg px-4 py-1">{t('propertyDetail.grade')} {property.grade}</Badge>
             </div>
