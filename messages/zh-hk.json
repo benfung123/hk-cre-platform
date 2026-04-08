@@ -159,6 +159,7 @@
   },
   "favorites": {
     "pageTitle": "我的收藏",
+    "pageDescription": "追蹤您喜愛的物業",
     "backToProperties": "返回物業列表",
     "savedCount": "已收藏 {count} 個物業",
     "emptyTitle": "暫無收藏物業",
@@ -166,11 +167,27 @@
     "browseButton": "瀏覽物業",
     "save": "收藏",
     "saved": "已收藏",
+    "remove": "移除",
+    "removeFromHistory": "從瀏覽紀錄移除",
+    "clearAll": "清除全部",
+    "clearAllConfirm": "確定要移除所有收藏的物業嗎？",
+    "clearHistory": "清除瀏覽紀錄",
+    "clearHistoryConfirm": "清除所有最近瀏覽的物業？",
     "recentlyViewed": "最近瀏覽",
     "marketTracking": "市場追蹤",
     "trackingCount": "正在追蹤 {count} 個物業",
     "exploreMore": "探索更多",
-    "browseAll": "瀏覽全部物業 →"
+    "browseAll": "瀏覽全部物業 →",
+    "selectForCompare": "選擇比較",
+    "addToCompare": "比較選項 {count, plural, =0 {} other {({count})}}",
+    "cancel": "取消",
+    "inCompare": "比較中",
+    "grades": {
+      "title": "級別分佈"
+    },
+    "districts": {
+      "title": "地區"
+    }
   },
   "analytics": {
     "page": {

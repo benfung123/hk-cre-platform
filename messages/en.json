@@ -159,6 +159,7 @@
   },
   "favorites": {
     "pageTitle": "My Watchlist",
+    "pageDescription": "Track your favorite properties",
     "backToProperties": "Back to Properties",
     "savedCount": "{count} {count, plural, one {property} other {properties}} saved",
     "emptyTitle": "No Saved Properties",
@@ -166,11 +167,27 @@
     "browseButton": "Browse Properties",
     "save": "Save",
     "saved": "Saved",
+    "remove": "Remove",
+    "removeFromHistory": "Remove from history",
+    "clearAll": "Clear All",
+    "clearAllConfirm": "Are you sure you want to remove all saved properties?",
+    "clearHistory": "Clear History",
+    "clearHistoryConfirm": "Clear all recently viewed properties?",
     "recentlyViewed": "Recently Viewed",
     "marketTracking": "Market Tracking",
     "trackingCount": "You're tracking {count} {count, plural, one {property} other {properties}}",
     "exploreMore": "Explore More",
-    "browseAll": "Browse all properties →"
+    "browseAll": "Browse all properties →",
+    "selectForCompare": "Select to Compare",
+    "addToCompare": "Compare Selected {count, plural, =0 {} other {({count})}}",
+    "cancel": "Cancel",
+    "inCompare": "In Compare",
+    "grades": {
+      "title": "Grade Distribution"
+    },
+    "districts": {
+      "title": "Districts"
+    }
   },
   "analytics": {
     "page": {

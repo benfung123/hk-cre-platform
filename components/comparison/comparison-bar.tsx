@@ -1,14 +1,20 @@
 'use client'
 
-import { Scale, X, ArrowRight } from 'lucide-react'
+import { Scale, X, ArrowRight, Heart } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useCompare } from '@/hooks/use-compare'
+import { useFavorites } from '@/hooks/use-favorites'
 import { Link } from '@/src/i18n/routing'
 import { cn } from '@/lib/utils'
 import { useTranslations } from 'next-intl'
 import { usePropertyData } from '@/hooks/use-property-data'
 import { useEffect, useState } from 'react'
-import Image from 'next/image'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 
 interface PropertyPreview {
   id: string
@@ -19,9 +25,12 @@ interface PropertyPreview {
 
 export function ComparisonBar() {
   const t = useTranslations('compare')
+  const tf = useTranslations('favorites')
   const { compareList, compareCount, clearCompare, removeFromCompare, isLoaded } = useCompare()
+  const { addFavorite, isFavorite } = useFavorites()
   const { getPropertyById } = usePropertyData()
   const [properties, setProperties] = useState<PropertyPreview[]>([])
+  const [showAddAllFavorites, setShowAddAllFavorites] = useState(false)
 
   useEffect(() => {
     async function loadProperties() {
@@ -30,25 +39,43 @@ export function ComparisonBar() {
         return
       }
 
-      const loadedProperties: PropertyPreview[] = []
-      
-      for (const id of compareList) {
-        const property = await getPropertyById(id)
-        if (property) {
-          loadedProperties.push({
-            id: property.id,
-            name: property.name,
+      const loaded = (await Promise.all(
+        compareList.map(async (id) => {
+          const property = await getPropertyById(id)
+          return property ? { 
+            id: property.id, 
+            name: property.name, 
             grade: property.grade,
             image_url: undefined
-          })
-        }
-      }
-      
-      setProperties(loadedProperties)
+          } : null
+        })
+      )).filter((p): p is { id: string; name: string; grade: string; image_url?: string } => p !== null)
+      setProperties(loaded)
     }
 
     loadProperties()
   }, [compareList, getPropertyById])
+
+  // Check if any properties can be added to favorites
+  useEffect(() => {
+    const hasUnfavorited = properties.some(p => !isFavorite(p.id))
+    setShowAddAllFavorites(hasUnfavorited)
+  }, [properties, isFavorite])
+
+  const handleAddAllToFavorites = () => {
+    let addedCount = 0
+    properties.forEach(property => {
+      if (!isFavorite(property.id)) {
+        addFavorite(property.id)
+        addedCount++
+      }
+    })
+    
+    // Show feedback (could use toast here)
+    if (addedCount > 0) {
+      console.log(`Added ${addedCount} properties to favorites`)
+    }
+  }
 
   if (!isLoaded || compareCount === 0) {
     return null
@@ -71,21 +98,39 @@ export function ComparisonBar() {
           {/* Property Thumbnails */}
           <div className="flex items-center gap-1">
             {properties.map((property) => (
-              <div 
-                key={property.id}
-                className="relative group flex items-center gap-2 bg-muted rounded-full pl-1 pr-3 py-1"
-              >
-                <div className="w-7 h-7 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center text-xs font-bold text-blue-600 dark:text-blue-300">
-                  {property.grade}
-                </div>
-                <span className="text-sm truncate max-w-[100px] hidden sm:inline">{property.name}</span>
-                <button
-                  onClick={() => removeFromCompare(property.id)}
-                  className="ml-1 p-0.5 rounded-full hover:bg-destructive hover:text-destructive-foreground transition-colors"
-                >
-                  <X className="h-3 w-3" />
-                </button>
-              </div>
+              <TooltipProvider key={property.id}>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div 
+                      className={cn(
+                        "relative group flex items-center gap-2 bg-muted rounded-full pl-1 pr-3 py-1 cursor-pointer hover:bg-accent transition-colors",
+                        isFavorite(property.id) && "ring-2 ring-red-200"
+                      )}
+                    >
+                      <div className="w-7 h-7 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center text-xs font-bold text-blue-600 dark:text-blue-300">
+                        {property.grade}
+                      </div>
+                      <span className="text-sm truncate max-w-[100px] hidden sm:inline">{property.name}</span>
+                      
+                      {/* Favorite indicator */}
+                      {isFavorite(property.id) && (
+                        <Heart className="h-3 w-3 text-red-500 fill-red-500 absolute -top-1 -right-1" />
+                      )}
+                      
+                      <button
+                        onClick={() => removeFromCompare(property.id)}
+                        className="ml-1 p-0.5 rounded-full hover:bg-destructive hover:text-destructive-foreground transition-colors"
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>{property.name}</p>
+                    {isFavorite(property.id) && <p className="text-xs text-red-500">{tf('saved')}</p>}
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             ))}
           </div>
         </div>
@@ -94,6 +139,28 @@ export function ComparisonBar() {
 
         {/* Action Buttons */}
         <div className="flex items-center gap-2 w-full sm:w-auto">
+          {/* Add All to Favorites Button */}
+          {showAddAllFavorites && (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="rounded-full"
+                    onClick={handleAddAllToFavorites}
+                  >
+                    <Heart className="h-4 w-4 mr-1" />
+                    <span className="hidden sm:inline">{tf('save')}</span>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>{tf('saveAllToFavorites') || 'Save all to favorites'}</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          )}
+
           <Link href="/compare" className="flex-1 sm:flex-none">
             <Button size="sm" className="rounded-full w-full sm:w-auto">
               <Scale className="h-4 w-4 mr-2" />

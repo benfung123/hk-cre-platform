@@ -159,6 +159,7 @@
   },
   "favorites": {
     "pageTitle": "我的收藏",
+    "pageDescription": "追踪您喜爱的物业",
     "backToProperties": "返回物业列表",
     "savedCount": "已收藏 {count} 个物业",
     "emptyTitle": "暂无收藏物业",
@@ -166,11 +167,27 @@
     "browseButton": "浏览物业",
     "save": "收藏",
     "saved": "已收藏",
+    "remove": "移除",
+    "removeFromHistory": "从浏览记录移除",
+    "clearAll": "清除全部",
+    "clearAllConfirm": "确定要移除所有收藏的物业吗？",
+    "clearHistory": "清除浏览记录",
+    "clearHistoryConfirm": "清除所有最近浏览的物业？",
     "recentlyViewed": "最近浏览",
     "marketTracking": "市场追踪",
     "trackingCount": "正在追踪 {count} 个物业",
     "exploreMore": "探索更多",
-    "browseAll": "浏览全部物业 →"
+    "browseAll": "浏览全部物业 →",
+    "selectForCompare": "选择比较",
+    "addToCompare": "比较选项 {count, plural, =0 {} other {({count})}}",
+    "cancel": "取消",
+    "inCompare": "比较中",
+    "grades": {
+      "title": "级别分布"
+    },
+    "districts": {
+      "title": "地区"
+    }
   },
   "analytics": {
     "page": {
