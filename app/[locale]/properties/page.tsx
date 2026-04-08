@@ -19,6 +19,7 @@ interface PropertiesPageProps {
     district?: string
     grade?: string
     search?: string
+    type?: string
   }>
 }
 
@@ -33,7 +34,8 @@ export default async function PropertiesPage({ searchParams }: PropertiesPagePro
     getProperties({
       district: params.district,
       grade: params.grade,
-      search: params.search
+      search: params.search,
+      type: params.type
     }),
     getDistricts(),
     getGradeDistribution()

@@ -5,6 +5,7 @@ export async function getProperties(filters?: {
   district?: string
   grade?: string
   search?: string
+  type?: string
   includeAggregates?: boolean
 }): Promise<Property[]> {
   const supabase = await createClient()
@@ -21,6 +22,10 @@ export async function getProperties(filters?: {
 
   if (filters?.district) {
     query = query.eq('district', filters.district)
+  }
+
+  if (filters?.type) {
+    query = query.eq('property_type', filters.type)
   }
 
   if (filters?.grade) {
