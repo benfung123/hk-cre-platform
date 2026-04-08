@@ -14,11 +14,10 @@ export async function getProperties(filters?: {
     .select('*')
     .order('name')
 
-  // By default, filter out aggregate/district-average properties
-  // Only show individual buildings with real names
-  if (!filters?.includeAggregates) {
-    query = query.or('data_type.eq.individual,data_type.is.null')
-  }
+  // Note: data_type filter temporarily disabled - column needs to be added to DB
+  // if (!filters?.includeAggregates) {
+  //   query = query.or('data_type.eq.individual,data_type.is.null')
+  // }
 
   if (filters?.district) {
     query = query.eq('district', filters.district)
@@ -45,10 +44,11 @@ export async function getProperties(filters?: {
 export async function getGradeDistribution(): Promise<{ grade: string; count: number }[]> {
   const supabase = await createClient()
   
+  // Note: data_type filter temporarily disabled - column needs to be added to DB
   const { data, error } = await supabase
     .from('properties')
     .select('grade')
-    .or('data_type.eq.individual,data_type.is.null')
+  // .or('data_type.eq.individual,data_type.is.null')
 
   if (error) {
     console.error('Error fetching grade distribution:', error)
@@ -120,10 +120,11 @@ export async function getPropertyTenancies(propertyId: string): Promise<Tenancy[
 export async function getDistricts(): Promise<string[]> {
   const supabase = await createClient()
   
+  // Note: data_type filter temporarily disabled - column needs to be added to DB
   const { data, error } = await supabase
     .from('properties')
     .select('district')
-    .or('data_type.eq.individual,data_type.is.null')
+  // .or('data_type.eq.individual,data_type.is.null')
 
   if (error) {
     console.error('Error fetching districts:', error)
