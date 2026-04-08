@@ -5,8 +5,10 @@ import { Button } from '@/components/ui/button'
 import { useComparison } from '@/hooks/use-comparison'
 import { Link } from '@/src/i18n/routing'
 import { cn } from '@/lib/utils'
+import { useTranslations } from 'next-intl'
 
 export function ComparisonBar() {
+  const t = useTranslations('compare')
   const { comparisonList, comparisonCount, clearComparison, isLoaded } = useComparison()
 
   if (!isLoaded || comparisonCount === 0) {
@@ -21,7 +23,7 @@ export function ComparisonBar() {
             {comparisonCount}
           </div>
           <span className="text-sm font-medium">
-            {comparisonCount === 1 ? 'Property' : 'Properties'} selected
+            {t('propertiesSelected', { count: comparisonCount })}
           </span>
         </div>
 
@@ -31,7 +33,7 @@ export function ComparisonBar() {
           <Link href="/compare">
             <Button size="sm" className="rounded-full">
               <Scale className="h-4 w-4 mr-2" />
-              Compare
+              {t('compareButton')}
               <ArrowRight className="h-4 w-4 ml-2" />
             </Button>
           </Link>

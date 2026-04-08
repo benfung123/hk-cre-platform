@@ -1,18 +1,24 @@
 import { ComparisonView } from '@/components/comparison/comparison-view'
+import { getTranslations } from 'next-intl/server'
 
-export const metadata = {
-  title: 'Compare Properties | HK CRE Platform',
-  description: 'Compare commercial properties side by side',
+export async function generateMetadata() {
+  const t = await getTranslations('compare')
+  return {
+    title: `${t('pageTitle')} | HK CRE Platform`,
+    description: t('pageDescription'),
+  }
 }
 
-export default function ComparePage() {
+export default async function ComparePage() {
+  const t = await getTranslations('compare')
+  
   return (
     <div className="container py-8">
       <div className="flex flex-col gap-8">
         <div>
-          <h1 className="text-3xl font-bold">Compare Properties</h1>
+          <h1 className="text-3xl font-bold">{t('pageTitle')}</h1>
           <p className="text-muted-foreground">
-            Compare up to 3 properties side by side to find the best investment opportunity.
+            {t('pageDescription')}
           </p>
         </div>
 

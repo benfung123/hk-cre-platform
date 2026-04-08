@@ -4,6 +4,7 @@ import { Scale, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useComparison } from '@/hooks/use-comparison'
 import { cn } from '@/lib/utils'
+import { useTranslations } from 'next-intl'
 import {
   Tooltip,
   TooltipContent,
@@ -24,6 +25,7 @@ export function CompareButton({
   showLabel = false,
   className 
 }: CompareButtonProps) {
+  const t = useTranslations('compare')
   const { isInComparison, toggleComparison, canAddMore, isFull, isLoaded } = useComparison()
   
   const isActive = isInComparison(propertyId)
@@ -75,7 +77,7 @@ export function CompareButton({
       ) : (
         <Scale className={cn(iconSizes[size], showLabel && 'mr-2')} />
       )}
-      {showLabel && (isActive ? 'Remove' : 'Compare')}
+      {showLabel && (isActive ? t('remove') : t('add'))}
     </Button>
   )
 
@@ -89,7 +91,7 @@ export function CompareButton({
             </div>
           </TooltipTrigger>
           <TooltipContent>
-            <p>Maximum 3 properties can be compared</p>
+            <p>{t('maxReached')}</p>
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>

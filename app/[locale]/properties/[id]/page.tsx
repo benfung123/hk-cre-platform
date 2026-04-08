@@ -13,6 +13,7 @@ import { PropertyLocation } from '@/components/PropertyLocation'
 import { PriceHistoryChart } from '@/components/charts/price-history-chart'
 import { SourceBadge, DataFreshnessIndicator, DataProvenanceDrawer } from '@/components/data-source'
 import { FavoriteButton } from '@/components/favorites/favorite-button'
+import { PropertyStructuredData } from '@/components/seo/PropertyStructuredData'
 
 interface PropertyPageProps {
   params: Promise<{
@@ -74,34 +75,9 @@ export default async function PropertyPage({ params }: PropertyPageProps) {
     return t(`districts.${districtKey}`) || district
   }
 
-  // Generate JSON-LD structured data
-  const jsonLd = {
-    '@context': 'https://schema.org',
-    '@type': 'RealEstateListing',
-    name: property.name,
-    description: `${property.name} - ${property.grade} Grade Office Building`,
-    address: {
-      '@type': 'PostalAddress',
-      streetAddress: property.address,
-      addressLocality: property.district,
-      addressCountry: 'HK',
-    },
-    floorSize: property.total_sqft ? {
-      '@type': 'QuantitativeValue',
-      value: property.total_sqft,
-      unitCode: 'FTK',
-    } : undefined,
-    yearBuilt: property.year_built || undefined,
-    url: `https://hk-cre-platform.vercel.app/properties/${property.id}`,
-    dateModified: property.updated_at || new Date().toISOString(),
-  }
-
   return (
     <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-      />
+      <PropertyStructuredData property={property} />
       
       {/* Subtle Banner */}
       <div className="relative h-24 bg-gradient-to-r from-blue-50 to-blue-100 overflow-hidden">

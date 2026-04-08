@@ -98,6 +98,8 @@
     "CausewayBay": "Causeway Bay",
     "TsimShaTsui": "Tsim Sha Tsui",
     "MongKok": "Mong Kok",
+    "SheungWan": "Sheung Wan",
+    "YauMaTei": "Yau Ma Tei",
     "NorthPoint": "North Point",
     "QuarryBay": "Quarry Bay",
     "KowloonBay": "Kowloon Bay",
@@ -116,5 +118,24 @@
     "en": "English",
     "zh-hk": "繁體中文",
     "zh-cn": "简体中文"
+  },
+  "compare": {
+    "pageTitle": "Compare Properties",
+    "pageDescription": "Compare up to 3 properties side by side to find the best investment opportunity.",
+    "add": "Compare",
+    "remove": "Remove",
+    "maxReached": "Maximum 3 properties can be compared",
+    "propertiesSelected": "{count} {count, plural, one {Property} other {Properties}} selected",
+    "compareButton": "Compare"
+  },
+  "favorites": {
+    "pageTitle": "My Watchlist",
+    "backToProperties": "Back to Properties",
+    "savedCount": "{count} {count, plural, one {property} other {properties}} saved",
+    "emptyTitle": "No Saved Properties",
+    "emptyDescription": "Save properties to your watchlist to track them and compare options.",
+    "browseButton": "Browse Properties",
+    "save": "Save",
+    "saved": "Saved"
   }
 }

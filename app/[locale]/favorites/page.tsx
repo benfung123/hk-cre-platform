@@ -11,8 +11,10 @@ import { usePropertyData } from '@/hooks/use-property-data'
 import type { Property } from '@/types'
 import { FavoriteButton } from '@/components/favorites/favorite-button'
 import { Skeleton } from '@/components/ui/skeleton'
+import { useTranslations } from 'next-intl'
 
 export default function FavoritesPage() {
+  const t = useTranslations('favorites')
   const { favorites, isLoaded } = useFavorites()
   const { getPropertyById } = usePropertyData()
   const [properties, setProperties] = useState<Property[]>([])
@@ -52,16 +54,16 @@ export default function FavoritesPage() {
             <Link href="/properties">
               <Button variant="ghost" size="sm">
                 <ArrowLeft className="h-4 w-4 mr-2" />
-                Back to Properties
+                {t('backToProperties')}
               </Button>
             </Link>
           </div>
         </div>
 
         <div>
-          <h1 className="text-3xl font-bold">My Watchlist</h1>
+          <h1 className="text-3xl font-bold">{t('pageTitle')}</h1>
           <p className="text-muted-foreground">
-            {properties.length} {properties.length === 1 ? 'property' : 'properties'} saved
+            {t('savedCount', { count: properties.length })}
           </p>
         </div>
 
@@ -130,17 +132,18 @@ function FavoritesSkeleton() {
 }
 
 function EmptyFavorites() {
+  const t = useTranslations('favorites')
   return (
     <div className="text-center py-16">
       <Heart className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
-      <h2 className="text-xl font-semibold mb-2">No Saved Properties</h2>
+      <h2 className="text-xl font-semibold mb-2">{t('emptyTitle')}</h2>
       <p className="text-muted-foreground mb-6">
-        Save properties to your watchlist to track them and compare options.
+        {t('emptyDescription')}
       </p>
       <Link href="/properties">
         <Button>
           <Building2 className="h-4 w-4 mr-2" />
-          Browse Properties
+          {t('browseButton')}
         </Button>
       </Link>
     </div>

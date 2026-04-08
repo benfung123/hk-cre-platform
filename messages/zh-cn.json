@@ -98,6 +98,8 @@
     "CausewayBay": "铜锣湾",
     "TsimShaTsui": "尖沙咀",
     "MongKok": "旺角",
+    "SheungWan": "上环",
+    "YauMaTei": "油麻地",
     "NorthPoint": "北角",
     "QuarryBay": "鲗鱼涌",
     "KowloonBay": "九龙湾",
@@ -116,5 +118,24 @@
     "en": "English",
     "zh-hk": "繁體中文",
     "zh-cn": "简体中文"
+  },
+  "compare": {
+    "pageTitle": "比较物业",
+    "pageDescription": "并排比较最多3个物业，找出最佳投资机会。",
+    "add": "比较",
+    "remove": "移除",
+    "maxReached": "最多可比较3个物业",
+    "propertiesSelected": "已选择 {count} 个物业",
+    "compareButton": "比较"
+  },
+  "favorites": {
+    "pageTitle": "我的收藏",
+    "backToProperties": "返回物业列表",
+    "savedCount": "已收藏 {count} 个物业",
+    "emptyTitle": "暂无收藏物业",
+    "emptyDescription": "将物业加入收藏夹以追踪和比较不同选项。",
+    "browseButton": "浏览物业",
+    "save": "收藏",
+    "saved": "已收藏"
   }
 }

@@ -4,6 +4,7 @@ import { Heart } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useFavorites } from '@/hooks/use-favorites'
 import { cn } from '@/lib/utils'
+import { useTranslations } from 'next-intl'
 
 interface FavoriteButtonProps {
   propertyId: string
@@ -18,6 +19,7 @@ export function FavoriteButton({
   showLabel = false,
   className 
 }: FavoriteButtonProps) {
+  const t = useTranslations('favorites')
   const { isFavorite, toggleFavorite, isLoaded } = useFavorites()
   
   const isActive = isFavorite(propertyId)
@@ -70,7 +72,7 @@ export function FavoriteButton({
           showLabel && 'mr-2'
         )} 
       />
-      {showLabel && (isActive ? 'Saved' : 'Save')}
+      {showLabel && (isActive ? t('saved') : t('save'))}
     </Button>
   )
 }
