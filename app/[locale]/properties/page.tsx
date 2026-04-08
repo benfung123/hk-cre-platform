@@ -49,8 +49,8 @@ export default async function PropertiesPage({ searchParams }: PropertiesPagePro
 
   return (
     <div className="flex flex-col">
-      {/* Hero Banner */}
-      <section className="relative py-12 bg-gradient-to-b from-muted/50 to-background overflow-hidden">
+      {/* Hero Banner - Full Width (breaks out of parent padding) */}
+      <section className="relative w-screen py-12 -mx-4 sm:-mx-6 lg:-mx-8 bg-gradient-to-b from-muted/50 to-background overflow-hidden">
         <div className="absolute inset-0 z-0">
           <img
             src="/banner-properties.png"

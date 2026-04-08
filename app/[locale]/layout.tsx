@@ -119,7 +119,7 @@ export default async function RootLayout({
       <body className="min-h-full flex flex-col bg-background">
         <NextIntlClientProvider messages={messages}>
           <Navbar />
-          <main className="flex-1">{children}</main>
+          <main className="flex-1 px-4 sm:px-6 lg:px-8">{children}</main>
           <footer className="border-t py-6 text-center text-sm text-muted-foreground">
             <div className="container">
               © {new Date().getFullYear()} HK CRE Platform. All rights reserved.

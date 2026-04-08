@@ -30,8 +30,8 @@ export default async function HomePage() {
 
   return (
     <div className="flex flex-col">
-      {/* Hero Section - Full Width Immersive */}
-      <section className="relative w-full h-[85vh] min-h-[600px]">
+      {/* Hero Section - Full Width Immersive (breaks out of parent padding) */}
+      <section className="relative w-screen h-[85vh] min-h-[600px] -mx-4 sm:-mx-6 lg:-mx-8">
         {/* Background image - full bleed */}
         <div className="absolute inset-0">
           <Image

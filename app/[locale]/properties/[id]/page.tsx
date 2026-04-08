@@ -80,8 +80,8 @@ export default async function PropertyPage({ params }: PropertyPageProps) {
     <>
       <PropertyStructuredData property={property} />
       
-      {/* Subtle Banner */}
-      <div className="relative h-24 bg-gradient-to-r from-blue-50 to-blue-100 overflow-hidden">
+      {/* Subtle Banner - Full Width (breaks out of parent padding) */}
+      <div className="relative w-screen h-24 -mx-4 sm:-mx-6 lg:-mx-8 bg-gradient-to-r from-blue-50 to-blue-100 overflow-hidden">
         <img
           src="/banner-property-detail.png"
           alt=""
