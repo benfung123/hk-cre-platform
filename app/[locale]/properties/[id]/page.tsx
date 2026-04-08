@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Separator } from '@/components/ui/separator'
 import { ArrowLeft, MapPin, Calendar, DollarSign, Users, Heart } from 'lucide-react'
-import { getPropertyById, getPropertyTransactions, getPropertyTenancies } from '@/lib/data'
+import { getPropertyById, getPropertyTransactions, getPropertyTenancies, getDistrictAverageForProperty } from '@/lib/data'
 import { PropertyLocation } from '@/components/PropertyLocation'
 import { PriceHistoryChart } from '@/components/charts/price-history-chart'
 import { SourceBadge, DataFreshnessIndicator, DataProvenanceDrawer } from '@/components/data-source'
@@ -59,10 +59,11 @@ export default async function PropertyPage({ params }: PropertyPageProps) {
   const { id } = await params
   const t = await getTranslations()
   
-  const [property, transactions, tenancies] = await Promise.all([
+  const [property, transactions, tenancies, districtAverage] = await Promise.all([
     getPropertyById(id),
     getPropertyTransactions(id),
-    getPropertyTenancies(id)
+    getPropertyTenancies(id),
+    getPropertyById(id).then(p => p ? getDistrictAverageForProperty(p.district) : 0)
   ])
 
   if (!property) {
@@ -196,6 +197,7 @@ export default async function PropertyPage({ params }: PropertyPageProps) {
           transactions={transactions}
           title="Rental Price History"
           description="Historical rental rates per square foot"
+          districtAverage={districtAverage > 0 ? districtAverage : undefined}
         />
 
         {/* Map Section */}

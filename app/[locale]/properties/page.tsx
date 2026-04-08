@@ -4,6 +4,14 @@ import { PropertyList } from '@/components/property-list'
 import { PropertyFilters } from '@/components/property-filters'
 import { Skeleton } from '@/components/ui/skeleton'
 import { getProperties, getDistricts } from '@/lib/data'
+import { DataFreshnessIndicator } from '@/components/data-source'
+import { Database, Info } from 'lucide-react'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 
 interface PropertiesPageProps {
   searchParams: Promise<{
@@ -29,6 +37,14 @@ export default async function PropertiesPage({ searchParams }: PropertiesPagePro
     getDistricts()
   ])
 
+  // Get the most recent update date from properties
+  const mostRecentUpdate = properties.length > 0 
+    ? properties.reduce((latest, p) => 
+        new Date(p.updated_at) > new Date(latest) ? p.updated_at : latest,
+        properties[0].updated_at
+      )
+    : new Date().toISOString()
+
   return (
     <div className="flex flex-col">
       {/* Hero Banner */}
@@ -42,10 +58,48 @@ export default async function PropertiesPage({ searchParams }: PropertiesPagePro
           <div className="absolute inset-0 bg-gradient-to-b from-background/60 via-background/40 to-background" />
         </div>
         <div className="container relative z-10">
-          <h1 className="text-3xl font-bold">{t('properties.page.title')}</h1>
-          <p className="text-muted-foreground">
-            {t('properties.page.subtitle')}
-          </p>
+          <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+            <div>
+              <h1 className="text-3xl font-bold">{t('properties.page.title')}</h1>
+              <p className="text-muted-foreground">
+                {t('properties.page.subtitle')}
+              </p>
+            </div>
+            
+            {/* Data Freshness Indicator */}
+            <div className="flex items-center gap-2">
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="flex items-center gap-2 px-3 py-1.5 bg-background/80 backdrop-blur-sm rounded-lg border shadow-sm cursor-help">
+                      <Database className="h-4 w-4 text-primary" />
+                      <DataFreshnessIndicator 
+                        lastUpdated={mostRecentUpdate}
+                        showLabel={true}
+                      />
+                      <Info className="h-3 w-3 text-muted-foreground" />
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom" className="max-w-xs">
+                    <div className="space-y-1">
+                      <p className="font-medium">Data Source Information</p>
+                      <p className="text-xs text-muted-foreground">
+                        Property data is sourced from the Hong Kong Rating and Valuation Department (RVD). 
+                        Updates are processed regularly to ensure accuracy.
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        Last data refresh: {new Date(mostRecentUpdate).toLocaleDateString('en-US', {
+                          year: 'numeric',
+                          month: 'long',
+                          day: 'numeric'
+                        })}
+                      </p>
+                    </div>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
+          </div>
         </div>
       </section>
 

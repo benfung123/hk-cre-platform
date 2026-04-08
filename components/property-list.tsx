@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
@@ -26,7 +26,7 @@ import { useTranslations } from 'next-intl'
 import { FavoriteButton } from '@/components/favorites/favorite-button'
 import { CompareButton } from '@/components/comparison/compare-button'
 import { ComparisonBar } from '@/components/comparison/comparison-bar'
-import { SourceBadge } from '@/components/data-source'
+import { SourceBadge, DataFreshnessIndicator } from '@/components/data-source'
 import { EmptyState } from '@/components/empty-state'
 
 interface PropertyListProps {
@@ -34,6 +34,9 @@ interface PropertyListProps {
 }
 
 type ViewMode = 'list' | 'map' | 'split'
+
+const RECENTLY_VIEWED_KEY = 'hk-cre-recently-viewed'
+const MAX_RECENT_ITEMS = 10
 
 export function PropertyList({ properties }: PropertyListProps) {
   const t = useTranslations()
@@ -61,6 +64,29 @@ export function PropertyList({ properties }: PropertyListProps) {
       property.district.toLowerCase().includes(query)
     )
   })
+
+  // Track property view for recently viewed
+  const trackPropertyView = useCallback((propertyId: string) => {
+    if (typeof window === 'undefined') return
+    
+    try {
+      const stored = localStorage.getItem(RECENTLY_VIEWED_KEY)
+      let recentIds: string[] = stored ? JSON.parse(stored) : []
+      
+      // Remove if already exists
+      recentIds = recentIds.filter(id => id !== propertyId)
+      
+      // Add to front
+      recentIds.unshift(propertyId)
+      
+      // Keep only max items
+      recentIds = recentIds.slice(0, MAX_RECENT_ITEMS)
+      
+      localStorage.setItem(RECENTLY_VIEWED_KEY, JSON.stringify(recentIds))
+    } catch (e) {
+      console.error('Failed to track property view:', e)
+    }
+  }, [])
 
   // Helper function to get translated district name
   const getDistrictTranslation = (district: string) => {
@@ -168,7 +194,7 @@ export function PropertyList({ properties }: PropertyListProps) {
           {/* List Side */}
           <div className="space-y-4 max-h-[600px] overflow-y-auto">
             {filteredProperties.map((property) => (
-              <Link key={property.id} href={`/properties/${property.id}`}>
+              <Link key={property.id} href={`/properties/${property.id}`} onClick={() => trackPropertyView(property.id)}>
                 <Card className="hover:shadow-md transition-shadow">
                   <CardHeader className="pb-2">
                     <div className="flex items-start justify-between">
@@ -176,7 +202,15 @@ export function PropertyList({ properties }: PropertyListProps) {
                         <CardTitle className="text-base">{property.name}</CardTitle>
                         <CardDescription className="text-sm">{property.address}</CardDescription>
                       </div>
-                      <Badge>{property.grade}</Badge>
+                      <div className="flex items-center gap-1">
+                        <SourceBadge 
+                          source="rvd" 
+                          lastUpdated={property.updated_at}
+                          reliability="high"
+                          className="hidden sm:inline-flex"
+                        />
+                        <Badge>{property.grade}</Badge>
+                      </div>
                     </div>
                   </CardHeader>
                   <CardContent className="pt-0">
@@ -209,8 +243,8 @@ export function PropertyList({ properties }: PropertyListProps) {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredProperties.map((property) => (
             <div key={property.id} className="relative group">
-              <Link href={`/properties/${property.id}`}>
-                <Card className="h-full hover:shadow-lg transition-shadow">
+              <Link href={`/properties/${property.id}`} onClick={() => trackPropertyView(property.id)}>
+                <Card className="h-full hover:shadow-lg transition-all duration-300">
                   <CardHeader>
                     <div className="flex items-start justify-between">
                       <div className="flex-1 min-w-0 pr-2">

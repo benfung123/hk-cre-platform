@@ -167,6 +167,43 @@ export async function getDistrictStats(): Promise<DistrictStats[]> {
   })).sort((a, b) => b.propertyCount - a.propertyCount)
 }
 
+export async function getDistrictAverageForProperty(district: string): Promise<number> {
+  const supabase = await createClient()
+  
+  // First, get all property IDs in the district
+  const { data: properties, error: propertyError } = await supabase
+    .from('properties')
+    .select('id')
+    .eq('district', district)
+
+  if (propertyError || !properties || properties.length === 0) {
+    return 0
+  }
+
+  const propertyIds = properties.map(p => p.id)
+
+  // Then get all lease transactions for those properties
+  const { data: transactions, error } = await supabase
+    .from('transactions')
+    .select('price_per_sqft')
+    .eq('type', 'lease')
+    .not('price_per_sqft', 'is', null)
+    .in('property_id', propertyIds)
+
+  if (error || !transactions || transactions.length === 0) {
+    console.error('Error fetching district average:', error)
+    return 0
+  }
+
+  const prices = transactions
+    .map(t => t.price_per_sqft)
+    .filter((p): p is number => p !== null && p !== undefined)
+
+  if (prices.length === 0) return 0
+
+  return prices.reduce((sum, p) => sum + p, 0) / prices.length
+}
+
 export async function searchProperties(query: string): Promise<Property[]> {
   const supabase = await createClient()
   

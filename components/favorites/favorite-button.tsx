@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import { Heart } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useFavorites } from '@/hooks/use-favorites'
@@ -11,16 +12,19 @@ interface FavoriteButtonProps {
   size?: 'sm' | 'md' | 'lg'
   showLabel?: boolean
   className?: string
+  onAnimationComplete?: () => void
 }
 
 export function FavoriteButton({ 
   propertyId, 
   size = 'md', 
   showLabel = false,
-  className 
+  className,
+  onAnimationComplete
 }: FavoriteButtonProps) {
   const t = useTranslations('favorites')
   const { isFavorite, toggleFavorite, isLoaded } = useFavorites()
+  const [isAnimating, setIsAnimating] = useState(false)
   
   const isActive = isFavorite(propertyId)
   
@@ -34,6 +38,22 @@ export function FavoriteButton({
     sm: 'h-4 w-4',
     md: 'h-5 w-5',
     lg: 'h-6 w-6'
+  }
+
+  const handleClick = (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    
+    // Trigger animation
+    if (!isActive) {
+      setIsAnimating(true)
+      setTimeout(() => {
+        setIsAnimating(false)
+        onAnimationComplete?.()
+      }, 400)
+    }
+    
+    toggleFavorite(propertyId)
   }
 
   if (!isLoaded) {
@@ -53,22 +73,27 @@ export function FavoriteButton({
     <Button
       variant={isActive ? 'default' : 'outline'}
       size={showLabel ? 'default' : 'icon'}
-      onClick={(e) => {
-        e.preventDefault()
-        e.stopPropagation()
-        toggleFavorite(propertyId)
-      }}
+      onClick={handleClick}
       className={cn(
-        'transition-all duration-200',
+        'transition-all duration-200 relative overflow-hidden',
         isActive && 'bg-red-500 hover:bg-red-600 border-red-500',
         !showLabel && sizeClasses[size],
         className
       )}
     >
+      {/* Heart animation burst effect */}
+      {isAnimating && (
+        <span className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <span className="absolute w-full h-full bg-red-400 rounded-full animate-ping opacity-25" />
+        </span>
+      )}
+      
       <Heart 
         className={cn(
           iconSizes[size],
+          'transition-transform duration-200',
           isActive && 'fill-current',
+          isAnimating && 'scale-125',
           showLabel && 'mr-2'
         )} 
       />
