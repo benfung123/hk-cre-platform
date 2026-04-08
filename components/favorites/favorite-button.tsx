@@ -1,9 +1,10 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Heart } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { useFavorites } from '@/hooks/use-favorites'
+import { useFavoritesStore } from '@/stores/favorites-store'
+import { useSimpleToast } from '@/components/ui/toast-provider'
 import { cn } from '@/lib/utils'
 import { useTranslations } from 'next-intl'
 
@@ -23,8 +24,21 @@ export function FavoriteButton({
   onAnimationComplete
 }: FavoriteButtonProps) {
   const t = useTranslations('favorites')
-  const { isFavorite, toggleFavorite, isLoaded } = useFavorites()
+  const tToast = useTranslations('toast')
+  const toast = useSimpleToast()
+  
+  // Get store values
+  const { isFavorite, toggleFavorite, setHydrated } = useFavoritesStore()
   const [isAnimating, setIsAnimating] = useState(false)
+  const [mounted, setMounted] = useState(false)
+  
+  // Handle hydration
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setMounted(true)
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setHydrated(true)
+  }, [setHydrated])
   
   const isActive = isFavorite(propertyId)
   
@@ -40,6 +54,20 @@ export function FavoriteButton({
     lg: 'h-6 w-6'
   }
 
+  // Show loading state before hydration
+  if (!mounted) {
+    return (
+      <Button
+        variant="outline"
+        size="icon"
+        className={cn(sizeClasses[size], className)}
+        disabled
+      >
+        <Heart className={cn(iconSizes[size], 'text-muted-foreground')} />
+      </Button>
+    )
+  }
+
   const handleClick = (e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
@@ -53,20 +81,14 @@ export function FavoriteButton({
       }, 400)
     }
     
-    toggleFavorite(propertyId)
-  }
-
-  if (!isLoaded) {
-    return (
-      <Button
-        variant="outline"
-        size="icon"
-        className={cn(sizeClasses[size], className)}
-        disabled
-      >
-        <Heart className={cn(iconSizes[size], 'text-muted-foreground')} />
-      </Button>
-    )
+    const nowFavorite = toggleFavorite(propertyId)
+    
+    // Show toast notification
+    if (nowFavorite) {
+      toast.success(tToast('addedToFavorites') || 'Added to watchlist', undefined, undefined, 'favorites-toast')
+    } else {
+      toast.info(tToast('removedFromFavorites') || 'Removed from watchlist', undefined, undefined, 'favorites-toast')
+    }
   }
 
   return (

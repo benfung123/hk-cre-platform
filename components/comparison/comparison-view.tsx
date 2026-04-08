@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -19,7 +19,8 @@ import {
   Maximize2,
   BarChart3
 } from 'lucide-react'
-import { useCompare } from '@/hooks/use-compare'
+import { useCompareStore } from '@/stores/compare-store'
+import { useSimpleToast } from '@/components/ui/toast-provider'
 import { usePropertyData } from '@/hooks/use-property-data'
 import type { Property, Transaction } from '@/types'
 import { useTranslations } from 'next-intl'
@@ -49,13 +50,30 @@ const gradeRank: Record<string, number> = {
 export function ComparisonView() {
   const t = useTranslations('compare')
   const tp = useTranslations('propertyDetail')
-  const { compareList, removeFromCompare, clearCompare } = useCompare()
+  const tToast = useTranslations('toast')
+  const toast = useSimpleToast()
+  
+  // Get store values
+  const { compareList, removeFromCompare, clearCompare, setHydrated } = useCompareStore()
   const { getPropertyById, getPropertyTransactions } = usePropertyData()
+  
   const [properties, setProperties] = useState<PropertyWithTransactions[]>([])
   const [loading, setLoading] = useState(true)
+  const [mounted, setMounted] = useState(false)
 
+  // Handle hydration
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setMounted(true)
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setHydrated(true)
+  }, [setHydrated])
+
+  // Load properties data
   useEffect(() => {
     async function loadProperties() {
+      if (!mounted) return
+      
       if (compareList.length === 0) {
         setProperties([])
         setLoading(false)
@@ -70,15 +88,24 @@ export function ComparisonView() {
           return property ? { ...property, transactions } : null
         })
       )
-      setProperties(loaded.filter(p => p !== null) as PropertyWithTransactions[])
+      setProperties(loaded.filter((p): p is PropertyWithTransactions => p !== null))
       setLoading(false)
     }
 
     loadProperties()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [compareList])
+  }, [compareList, getPropertyById, getPropertyTransactions, mounted])
 
-  if (loading) {
+  const handleRemove = (id: string) => {
+    removeFromCompare(id)
+    toast.info(tToast('removedFromCompare') || 'Removed from compare', undefined, undefined, 'compare-toast')
+  }
+
+  const handleClear = () => {
+    clearCompare()
+    toast.info(tToast('compareCleared') || 'Compare list cleared', undefined, undefined, 'compare-toast')
+  }
+
+  if (!mounted || loading) {
     return <ComparisonSkeleton />
   }
 
@@ -157,7 +184,7 @@ export function ComparisonView() {
           <span className="text-sm text-muted-foreground">
             {t('propertiesSelected', { count: properties.length })}
           </span>
-          <Button variant="outline" size="sm" onClick={clearCompare}>
+          <Button variant="outline" size="sm" onClick={handleClear}>
             <X className="h-4 w-4 mr-2" />
             {t('clearAll')}
           </Button>
@@ -239,7 +266,7 @@ export function ComparisonView() {
                 variant="ghost"
                 size="sm"
                 className="absolute top-2 right-2 h-8 w-8 p-0 z-10 bg-background/80 backdrop-blur-sm"
-                onClick={() => removeFromCompare(property.id)}
+                onClick={() => handleRemove(property.id)}
               >
                 <X className="h-4 w-4" />
               </Button>

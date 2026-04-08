@@ -26,7 +26,7 @@ import { CompareButton } from '@/components/comparison/compare-button'
 import { ComparisonBar } from '@/components/comparison/comparison-bar'
 import { SourceBadge } from '@/components/data-source'
 import { EmptyState } from '@/components/empty-state'
-import { useFavorites } from '@/hooks/use-favorites'
+import { useFavoritesStore } from '@/stores/favorites-store'
 
 interface PropertyListProps {
   properties: Property[]
@@ -38,12 +38,24 @@ export function PropertyList({ properties }: PropertyListProps) {
   const t = useTranslations()
   const searchParams = useSearchParams()
   const [viewMode, setViewMode] = useState<ViewMode>('list')
-  const { addToRecentlyViewed } = useFavorites()
+  const [mounted, setMounted] = useState(false)
+  
+  // Get store values
+  const { addToRecentlyViewed, setHydrated } = useFavoritesStore()
+  
+  // Handle hydration
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setMounted(true)
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setHydrated(true)
+  }, [setHydrated])
   
   // Read view from URL on mount
   useEffect(() => {
     const view = searchParams.get('view')
     if (view === 'map' || view === 'split' || view === 'list') {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setViewMode(view)
     }
   }, [searchParams])
@@ -62,7 +74,7 @@ export function PropertyList({ properties }: PropertyListProps) {
     )
   })
 
-  // Track property view for recently viewed - uses the new useFavorites hook
+  // Track property view for recently viewed
   const trackPropertyView = useCallback((propertyId: string) => {
     addToRecentlyViewed(propertyId)
   }, [addToRecentlyViewed])

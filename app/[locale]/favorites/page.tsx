@@ -19,44 +19,58 @@ import {
   Square,
   X
 } from 'lucide-react'
-import { useFavorites } from '@/hooks/use-favorites'
+import { useFavoritesStore } from '@/stores/favorites-store'
+import { useCompareStore } from '@/stores/compare-store'
+import { useSimpleToast } from '@/components/ui/toast-provider'
 import type { Property } from '@/types'
 import { FavoriteButton } from '@/components/favorites/favorite-button'
 import { HomeRecentlyViewed } from '@/components/favorites/home-recently-viewed'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useTranslations } from 'next-intl'
-import { useCompare } from '@/hooks/use-compare'
 import { CompareButton } from '@/components/comparison/compare-button'
 import { cn } from '@/lib/utils'
+import { supabase } from '@/lib/supabase/client'
 
 export default function FavoritesPage() {
   const t = useTranslations('favorites')
+  const tToast = useTranslations('toast')
+  const toast = useSimpleToast()
+  
+  // Get store values
   const { 
     favorites, 
-    isLoaded, 
-    getFavorites, 
     clearAllFavorites,
-    removeFavorite 
-  } = useFavorites()
+    removeFavorite,
+    setHydrated 
+  } = useFavoritesStore()
+  
   const { 
     compareList, 
     addToCompare, 
     removeFromCompare, 
     isInCompare,
-    canAddMore 
-  } = useCompare()
+    canAddMore,
+    setHydrated: setCompareHydrated
+  } = useCompareStore()
   
   const [properties, setProperties] = useState<Property[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedForCompare, setSelectedForCompare] = useState<Set<string>>(new Set())
   const [showCompareMode, setShowCompareMode] = useState(false)
+  const [mounted, setMounted] = useState(false)
   const hasLoadedRef = useRef(false)
 
-  // Load favorites data - only run once
+  // Handle hydration
+  useEffect(() => {
+    setMounted(true)
+    setHydrated(true)
+    setCompareHydrated(true)
+  }, [setHydrated, setCompareHydrated])
+
+  // Load favorites data - only run once when mounted
   useEffect(() => {
     async function loadProperties() {
-      if (!isLoaded || hasLoadedRef.current) {
-        console.log('[FavoritesPage] Skipping load - not ready or already loaded')
+      if (!mounted || hasLoadedRef.current) {
         return
       }
       
@@ -64,9 +78,24 @@ export default function FavoritesPage() {
       hasLoadedRef.current = true
       setLoading(true)
       try {
-        const loaded = await getFavorites()
-        console.log('[FavoritesPage] Loaded properties:', loaded.length)
-        setProperties(loaded)
+        if (favorites.length === 0) {
+          setProperties([])
+        } else {
+          const { data, error } = await supabase
+            .from('properties')
+            .select('*')
+            .in('id', favorites)
+          
+          if (error) throw error
+          
+          // Sort by favorites order
+          const propertyMap = new Map((data as Property[] | null)?.map(p => [p.id, p]))
+          const sorted = favorites
+            .map(id => propertyMap.get(id))
+            .filter((p): p is Property => p !== undefined)
+          
+          setProperties(sorted)
+        }
       } catch (e) {
         console.error('[FavoritesPage] Failed to load favorites:', e)
       } finally {
@@ -75,30 +104,46 @@ export default function FavoritesPage() {
     }
 
     loadProperties()
-  }, [isLoaded, getFavorites])
+  }, [mounted, favorites])
 
   // Reload when page becomes visible (user navigates back)
   useEffect(() => {
     function handleVisibilityChange() {
-      if (document.visibilityState === 'visible' && isLoaded && hasLoadedRef.current) {
+      if (document.visibilityState === 'visible' && mounted && hasLoadedRef.current) {
         console.log('[FavoritesPage] Page visible, reloading favorites')
         hasLoadedRef.current = false // Reset to allow reload
         setLoading(true)
-        getFavorites().then(loaded => {
-          console.log('[FavoritesPage] Reloaded properties:', loaded.length)
-          setProperties(loaded)
+        
+        // Reload favorites data
+        if (favorites.length === 0) {
+          setProperties([])
           setLoading(false)
           hasLoadedRef.current = true
-        }).catch(e => {
-          console.error('[FavoritesPage] Failed to reload favorites:', e)
-          setLoading(false)
-        })
+        } else {
+          supabase
+            .from('properties')
+            .select('*')
+            .in('id', favorites)
+            .then(({ data, error }) => {
+              if (error) {
+                console.error('[FavoritesPage] Failed to reload favorites:', error)
+              } else {
+                const propertyMap = new Map((data as Property[] | null)?.map(p => [p.id, p]))
+                const sorted = favorites
+                  .map(id => propertyMap.get(id))
+                  .filter((p): p is Property => p !== undefined)
+                setProperties(sorted)
+              }
+              setLoading(false)
+              hasLoadedRef.current = true
+            })
+        }
       }
     }
 
     document.addEventListener('visibilitychange', handleVisibilityChange)
     return () => document.removeEventListener('visibilitychange', handleVisibilityChange)
-  }, [isLoaded, getFavorites])
+  }, [mounted, favorites])
 
   // Sync selected items with compare list
   useEffect(() => {
@@ -108,29 +153,49 @@ export default function FavoritesPage() {
   const handleClearAll = () => {
     if (confirm(t('clearAllConfirm') || 'Are you sure you want to remove all saved properties?')) {
       clearAllFavorites()
+      toast.info(tToast('favoritesCleared') || 'All favorites cleared', undefined, undefined, 'favorites-toast')
     }
+  }
+
+  const handleRemove = (id: string) => {
+    removeFavorite(id)
+    setProperties(prev => prev.filter(p => p.id !== id))
+    toast.info(tToast('removedFromFavorites') || 'Removed from watchlist', undefined, undefined, 'favorites-toast')
   }
 
   const handleToggleCompare = (propertyId: string) => {
     if (isInCompare(propertyId)) {
       removeFromCompare(propertyId)
-    } else if (canAddMore) {
-      addToCompare(propertyId)
+      toast.info(tToast('removedFromCompare') || 'Removed from compare', undefined, undefined, 'compare-toast')
+    } else if (canAddMore()) {
+      const success = addToCompare(propertyId)
+      if (success) {
+        toast.success(tToast('addedToCompare') || 'Added to compare', undefined, undefined, 'compare-toast')
+      }
+    } else {
+      toast.warning(tToast('compareFull') || 'Compare list full', undefined, undefined, 'compare-toast')
     }
   }
 
   const handleCompareSelected = () => {
     // Add all selected to compare list
+    let addedCount = 0
     selectedForCompare.forEach(id => {
       if (!isInCompare(id)) {
-        addToCompare(id)
+        if (addToCompare(id)) {
+          addedCount++
+        }
       }
     })
+    
+    if (addedCount > 0) {
+      toast.success(tToast('addedToCompare') || `Added ${addedCount} to compare`, undefined, undefined, 'compare-toast')
+    }
     setShowCompareMode(false)
   }
 
   // Show loading skeleton while data is loading
-  if (!isLoaded || loading) {
+  if (!mounted || loading) {
     return <FavoritesSkeleton />
   }
 
@@ -231,8 +296,8 @@ export default function FavoritesPage() {
                   isSelected={selectedForCompare.has(property.id)}
                   isInCompare={isInCompare(property.id)}
                   onToggleCompare={() => handleToggleCompare(property.id)}
-                  onRemove={() => removeFavorite(property.id)}
-                  canAddMore={canAddMore}
+                  onRemove={() => handleRemove(property.id)}
+                  canAddMore={canAddMore()}
                 />
               ))}
             </div>

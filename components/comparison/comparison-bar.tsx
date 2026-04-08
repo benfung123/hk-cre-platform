@@ -1,14 +1,15 @@
 'use client'
 
+import { useEffect, useState } from 'react'
 import { Scale, X, ArrowRight, Heart, Lock } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { useCompare } from '@/hooks/use-compare'
-import { useFavorites } from '@/hooks/use-favorites'
+import { useCompareStore } from '@/stores/compare-store'
+import { useFavoritesStore } from '@/stores/favorites-store'
+import { useSimpleToast } from '@/components/ui/toast-provider'
 import { Link } from '@/src/i18n/routing'
 import { cn } from '@/lib/utils'
 import { useTranslations } from 'next-intl'
 import { usePropertyData } from '@/hooks/use-property-data'
-import { useEffect, useState } from 'react'
 import {
   Tooltip,
   TooltipContent,
@@ -19,18 +20,34 @@ import {
 interface PropertyPreview {
   id: string
   name: string
-  grade: string
+  grade: 'A+' | 'A' | 'B' | 'C' | string
   image_url?: string
 }
 
 export function ComparisonBar() {
   const t = useTranslations('compare')
   const tf = useTranslations('favorites')
-  const { compareList, compareCount, clearCompare, removeFromCompare, isLoaded } = useCompare()
-  const { addFavorite, isFavorite } = useFavorites()
+  const tToast = useTranslations('toast')
+  const toast = useSimpleToast()
+  
+  // Get store values
+  const { compareList, removeFromCompare, clearCompare, setHydrated } = useCompareStore()
+  const { addFavorite, isFavorite } = useFavoritesStore()
   const { getPropertyById } = usePropertyData()
+  
   const [properties, setProperties] = useState<PropertyPreview[]>([])
   const [showAddAllFavorites, setShowAddAllFavorites] = useState(false)
+  const [mounted, setMounted] = useState(false)
+
+  // Handle hydration
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setMounted(true)
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setHydrated(true)
+  }, [setHydrated])
+
+  const compareCount = compareList.length
 
   // Debug logging
   useEffect(() => {
@@ -38,6 +55,7 @@ export function ComparisonBar() {
     console.log('[CompareBar] compareCount:', compareCount)
   }, [compareList, compareCount])
 
+  // Load property data for thumbnails
   useEffect(() => {
     async function loadProperties() {
       if (compareList.length === 0) {
@@ -45,23 +63,25 @@ export function ComparisonBar() {
         return
       }
 
-      const loaded = (await Promise.all(
-        compareList.map(async (id) => {
+      const loaded: PropertyPreview[] = (await Promise.all(
+        compareList.map(async (id): Promise<PropertyPreview | null> => {
           const property = await getPropertyById(id)
-          return property ? { 
-            id: property.id, 
-            name: property.name, 
-            grade: property.grade || '',
+          if (!property) return null
+          return {
+            id: property.id,
+            name: property.name,
+            grade: property.grade,
             image_url: undefined
-          } : null
+          }
         })
-      )).filter(p => p !== null) as PropertyPreview[]
+      )).filter((p): p is PropertyPreview => p !== null)
       setProperties(loaded)
     }
 
-    loadProperties()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [compareList]) // getPropertyById is stable (useCallback with [] deps) - only reload when compareList changes
+    if (mounted) {
+      loadProperties()
+    }
+  }, [compareList, getPropertyById, mounted])
 
   // Check if any properties can be added to favorites
   useEffect(() => {
@@ -78,13 +98,23 @@ export function ComparisonBar() {
       }
     })
     
-    // Show feedback (could use toast here)
     if (addedCount > 0) {
-      console.log(`Added ${addedCount} properties to favorites`)
+      toast.success(tToast('addedToFavorites') || `Added ${addedCount} properties to favorites`, undefined, undefined, 'favorites-toast')
     }
   }
 
-  if (!isLoaded || compareCount === 0) {
+  const handleRemove = (id: string) => {
+    removeFromCompare(id)
+    toast.info(tToast('removedFromCompare') || 'Removed from compare', undefined, undefined, 'compare-toast')
+  }
+
+  const handleClear = () => {
+    clearCompare()
+    toast.info(tToast('compareCleared') || 'Compare list cleared', undefined, undefined, 'compare-toast')
+  }
+
+  // Don't render until hydrated and has items
+  if (!mounted || compareCount === 0) {
     return null
   }
 
@@ -136,7 +166,7 @@ export function ComparisonBar() {
                         )}
                         
                         <button
-                          onClick={() => removeFromCompare(property.id)}
+                          onClick={() => handleRemove(property.id)}
                           className="ml-1 p-0.5 rounded-full hover:bg-destructive hover:text-destructive-foreground transition-colors"
                         >
                           <X className="h-3 w-3" />
@@ -191,7 +221,7 @@ export function ComparisonBar() {
               variant="ghost" 
               size="sm" 
               className="rounded-full h-8 w-8 p-0"
-              onClick={clearCompare}
+              onClick={handleClear}
               title={t('clearAll')}
             >
               <X className="h-4 w-4" />

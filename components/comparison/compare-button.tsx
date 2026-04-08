@@ -1,8 +1,10 @@
 'use client'
 
+import { useEffect, useState } from 'react'
 import { Scale, Check, Lock } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { useCompare } from '@/hooks/use-compare'
+import { useCompareStore } from '@/stores/compare-store'
+import { useSimpleToast } from '@/components/ui/toast-provider'
 import { cn } from '@/lib/utils'
 import { useTranslations } from 'next-intl'
 import {
@@ -26,9 +28,25 @@ export function CompareButton({
   className 
 }: CompareButtonProps) {
   const t = useTranslations('compare')
-  const { isInCompare, toggleCompare, canAddMore, isFull, isLoaded } = useCompare()
+  const toast = useSimpleToast()
+  const tToast = useTranslations('toast')
+  
+  // Get store values
+  const { compareList, addToCompare, removeFromCompare, isInCompare, canAddMore, setHydrated } = useCompareStore()
+  
+  // Handle hydration
+  const [mounted, setMounted] = useState(false)
+  
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setMounted(true)
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setHydrated(true)
+  }, [setHydrated])
   
   const isActive = isInCompare(propertyId)
+  const canAdd = canAddMore()
+  const isListFull = compareList.length >= 3
   
   const sizeClasses = {
     sm: 'h-9 w-9 min-h-[36px] min-w-[36px] sm:h-8 sm:w-8',
@@ -42,7 +60,8 @@ export function CompareButton({
     lg: 'h-6 w-6'
   }
 
-  if (!isLoaded) {
+  // Show loading state before hydration
+  if (!mounted) {
     return (
       <Button
         variant="outline"
@@ -55,16 +74,31 @@ export function CompareButton({
     )
   }
 
+  const handleClick = (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    
+    if (isActive) {
+      removeFromCompare(propertyId)
+      toast.info(tToast('removedFromCompare') || 'Removed from compare', undefined, undefined, 'compare-toast')
+    } else {
+      const success = addToCompare(propertyId)
+      if (success) {
+        toast.success(tToast('addedToCompare') || 'Added to compare', undefined, undefined, 'compare-toast')
+      } else if (isListFull) {
+        toast.warning(tToast('compareFull') || 'Compare list full (max 3)', undefined, undefined, 'compare-toast')
+      } else {
+        toast.info(tToast('alreadyInCompare') || 'Already in compare list', undefined, undefined, 'compare-toast')
+      }
+    }
+  }
+
   const button = (
     <Button
       variant={isActive ? 'default' : 'outline'}
       size={showLabel ? 'default' : 'icon'}
-      onClick={(e) => {
-        e.preventDefault()
-        e.stopPropagation()
-        toggleCompare(propertyId)
-      }}
-      disabled={!isActive && !canAddMore}
+      onClick={handleClick}
+      disabled={!isActive && !canAdd}
       className={cn(
         'transition-all duration-200',
         isActive && 'bg-blue-500 hover:bg-blue-600 border-blue-500 text-white',
@@ -86,7 +120,7 @@ export function CompareButton({
     </Button>
   )
 
-  if (!isActive && isFull) {
+  if (!isActive && isListFull) {
     return (
       <TooltipProvider>
         <Tooltip>

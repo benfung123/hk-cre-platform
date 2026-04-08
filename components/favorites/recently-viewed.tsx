@@ -7,10 +7,11 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Clock, X, Eye, Trash2 } from 'lucide-react'
-import { useFavorites } from '@/hooks/use-favorites'
+import { useFavoritesStore } from '@/stores/favorites-store'
 import { FavoriteButton } from './favorite-button'
 import { useTranslations } from 'next-intl'
 import type { Property } from '@/types'
+import { supabase } from '@/lib/supabase/client'
 
 interface RecentlyViewedProps {
   /** Maximum number of items to display (default: 10) */
@@ -48,15 +49,22 @@ export function RecentlyViewed({
   className = ''
 }: RecentlyViewedProps) {
   const t = useTranslations('favorites')
-  const { recentlyViewed, isLoaded, getRecentlyViewed, clearRecentlyViewed, removeFromRecentlyViewed } = useFavorites()
+  const { recentlyViewed, isHydrated, clearRecentlyViewed, removeFromRecentlyViewed, setHydrated } = useFavoritesStore()
   const [properties, setProperties] = useState<Property[]>([])
   const [loading, setLoading] = useState(true)
+  const [mounted, setMounted] = useState(false)
   const hasLoadedRef = useRef(false)
+
+  // Handle hydration
+  useEffect(() => {
+    setMounted(true)
+    setHydrated(true)
+  }, [setHydrated])
 
   // Load properties data - only once
   useEffect(() => {
     async function loadProperties() {
-      if (!isLoaded || hasLoadedRef.current) return
+      if (!mounted || !isHydrated || hasLoadedRef.current) return
       
       hasLoadedRef.current = true
       
@@ -68,11 +76,21 @@ export function RecentlyViewed({
 
       setLoading(true)
       try {
-        const loaded = await getRecentlyViewed()
-        // Filter out excluded IDs and apply limit
-        const filtered = loaded
-          .filter(p => !excludeIds.includes(p.id))
+        const { data, error } = await supabase
+          .from('properties')
+          .select('*')
+          .in('id', recentlyViewed)
+        
+        if (error) throw error
+        
+        // Filter out excluded IDs and apply limit, maintain order
+        const propertyMap = new Map((data as Property[] | null)?.map(p => [p.id, p]))
+        const filtered = recentlyViewed
+          .filter(id => !excludeIds.includes(id))
           .slice(0, limit)
+          .map(id => propertyMap.get(id))
+          .filter((p): p is Property => p !== undefined)
+        
         setProperties(filtered)
       } catch (e) {
         console.error('Failed to load recently viewed:', e)
@@ -82,10 +100,10 @@ export function RecentlyViewed({
     }
 
     loadProperties()
-  }, [isLoaded]) // Only depend on isLoaded, not on changing arrays
+  }, [mounted, isHydrated, recentlyViewed, excludeIds, limit])
 
   // Don't render if no items and not loading
-  if (!loading && properties.length === 0) {
+  if (!mounted || (!loading && properties.length === 0)) {
     return null
   }
 
@@ -246,21 +264,45 @@ export function RecentlyViewedInline({
   className?: string 
 }) {
   const t = useTranslations('favorites')
-  const { recentlyViewed, isLoaded, getRecentlyViewed } = useFavorites()
+  const { recentlyViewed, isHydrated, setHydrated } = useFavoritesStore()
   const [properties, setProperties] = useState<Property[]>([])
+  const [mounted, setMounted] = useState(false)
   const hasLoadedRef = useRef(false)
+
+  // Handle hydration
+  useEffect(() => {
+    setMounted(true)
+    setHydrated(true)
+  }, [setHydrated])
 
   useEffect(() => {
     async function load() {
-      if (!isLoaded || hasLoadedRef.current || recentlyViewed.length === 0) return
+      if (!mounted || !isHydrated || hasLoadedRef.current || recentlyViewed.length === 0) return
       hasLoadedRef.current = true
-      const loaded = await getRecentlyViewed()
-      setProperties(loaded.slice(0, limit))
+      
+      try {
+        const { data, error } = await supabase
+          .from('properties')
+          .select('*')
+          .in('id', recentlyViewed.slice(0, limit))
+        
+        if (error) throw error
+        
+        const propertyMap = new Map((data as Property[] | null)?.map(p => [p.id, p]))
+        const sorted = recentlyViewed
+          .slice(0, limit)
+          .map(id => propertyMap.get(id))
+          .filter((p): p is Property => p !== undefined)
+        
+        setProperties(sorted)
+      } catch (e) {
+        console.error('Failed to load recently viewed inline:', e)
+      }
     }
     load()
-  }, [isLoaded]) // Only depend on isLoaded
+  }, [mounted, isHydrated, recentlyViewed, limit])
 
-  if (!isLoaded || properties.length === 0) return null
+  if (!mounted || properties.length === 0) return null
 
   return (
     <div className={className}>
