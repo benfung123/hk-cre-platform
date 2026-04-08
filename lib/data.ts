@@ -119,12 +119,14 @@ export async function getPropertyTenancies(propertyId: string): Promise<Tenancy[
 
 export async function getDistricts(): Promise<string[]> {
   const supabase = await createClient()
-  
-  // Note: data_type filter temporarily disabled - column needs to be added to DB
+
+  // Filter out aggregate properties (RVD grouped data with "Grade X Office" in name)
   const { data, error } = await supabase
     .from('properties')
     .select('district')
-  // .or('data_type.eq.individual,data_type.is.null')
+    .not('name', 'ilike', '%Grade%A%Office%')
+    .not('name', 'ilike', '%Grade%B%Office%')
+    .not('name', 'ilike', '%Grade%C%Office%')
 
   if (error) {
     console.error('Error fetching districts:', error)

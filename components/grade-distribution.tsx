@@ -1,8 +1,10 @@
 'use client'
 
 import { useTranslations } from 'next-intl'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { Badge } from '@/components/ui/badge'
-import { Building2 } from 'lucide-react'
+import { Building2, X } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 
 interface Grade {
   grade: string
@@ -11,8 +13,6 @@ interface Grade {
 
 interface GradeDistributionProps {
   grades: Grade[]
-  selectedGrade?: string
-  onSelectGrade?: (grade: string) => void
 }
 
 const gradeColors: Record<string, string> = {
@@ -24,8 +24,28 @@ const gradeColors: Record<string, string> = {
 
 const gradeOrder = ['A+', 'A', 'B', 'C']
 
-export function GradeDistribution({ grades, selectedGrade, onSelectGrade }: GradeDistributionProps) {
+export function GradeDistribution({ grades }: GradeDistributionProps) {
   const t = useTranslations()
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  
+  const selectedGrade = searchParams.get('grade') || ''
+  
+  const handleGradeClick = (grade: string) => {
+    const params = new URLSearchParams(searchParams.toString())
+    if (selectedGrade === grade) {
+      params.delete('grade')
+    } else {
+      params.set('grade', grade)
+    }
+    router.push(`?${params.toString()}`)
+  }
+  
+  const clearFilters = () => {
+    const params = new URLSearchParams(searchParams.toString())
+    params.delete('grade')
+    router.push(`?${params.toString()}`)
+  }
   
   // Sort grades in order: A+, A, B, C
   const sortedGrades = [...grades].sort((a, b) => {
@@ -49,15 +69,15 @@ export function GradeDistribution({ grades, selectedGrade, onSelectGrade }: Grad
       {sortedGrades.map(({ grade, count }) => (
         <button
           key={grade}
-          onClick={() => onSelectGrade?.(selectedGrade === grade ? '' : grade)}
-          className={`transition-all ${onSelectGrade ? 'cursor-pointer' : 'cursor-default'}`}
+          onClick={() => handleGradeClick(grade)}
+          className="cursor-pointer transition-all"
         >
           <Badge 
             variant="outline"
             className={`
               ${gradeColors[grade] || 'bg-gray-100 text-gray-800'}
-              ${selectedGrade === grade ? 'ring-2 ring-offset-1 ring-primary' : ''}
-              px-2 py-0.5
+              ${selectedGrade === grade ? 'ring-2 ring-offset-1 ring-primary font-semibold' : ''}
+              px-2 py-0.5 hover:opacity-80
             `}
           >
             Grade {grade}
@@ -68,6 +88,17 @@ export function GradeDistribution({ grades, selectedGrade, onSelectGrade }: Grad
       <span className="text-xs text-muted-foreground ml-2">
         {totalCount} total
       </span>
+      {selectedGrade && (
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          onClick={clearFilters}
+          className="h-6 px-2 text-xs"
+        >
+          <X className="h-3 w-3 mr-1" />
+          Clear
+        </Button>
+      )}
     </div>
   )
 }
