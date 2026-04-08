@@ -77,6 +77,29 @@ export default function FavoritesPage() {
     loadProperties()
   }, [isLoaded, getFavorites])
 
+  // Reload when page becomes visible (user navigates back)
+  useEffect(() => {
+    function handleVisibilityChange() {
+      if (document.visibilityState === 'visible' && isLoaded && hasLoadedRef.current) {
+        console.log('[FavoritesPage] Page visible, reloading favorites')
+        hasLoadedRef.current = false // Reset to allow reload
+        setLoading(true)
+        getFavorites().then(loaded => {
+          console.log('[FavoritesPage] Reloaded properties:', loaded.length)
+          setProperties(loaded)
+          setLoading(false)
+          hasLoadedRef.current = true
+        }).catch(e => {
+          console.error('[FavoritesPage] Failed to reload favorites:', e)
+          setLoading(false)
+        })
+      }
+    }
+
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange)
+  }, [isLoaded, getFavorites])
+
   // Sync selected items with compare list
   useEffect(() => {
     setSelectedForCompare(new Set(compareList))
