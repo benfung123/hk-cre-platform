@@ -28,6 +28,7 @@ import { CompareButton } from '@/components/comparison/compare-button'
 import { ComparisonBar } from '@/components/comparison/comparison-bar'
 import { SourceBadge, DataFreshnessIndicator } from '@/components/data-source'
 import { EmptyState } from '@/components/empty-state'
+import { useFavorites } from '@/hooks/use-favorites'
 
 interface PropertyListProps {
   properties: Property[]
@@ -35,13 +36,11 @@ interface PropertyListProps {
 
 type ViewMode = 'list' | 'map' | 'split'
 
-const RECENTLY_VIEWED_KEY = 'hk-cre-recently-viewed'
-const MAX_RECENT_ITEMS = 10
-
 export function PropertyList({ properties }: PropertyListProps) {
   const t = useTranslations()
   const searchParams = useSearchParams()
   const [viewMode, setViewMode] = useState<ViewMode>('list')
+  const { addToRecentlyViewed } = useFavorites()
   
   // Read view from URL on mount
   useEffect(() => {
@@ -65,28 +64,10 @@ export function PropertyList({ properties }: PropertyListProps) {
     )
   })
 
-  // Track property view for recently viewed
+  // Track property view for recently viewed - uses the new useFavorites hook
   const trackPropertyView = useCallback((propertyId: string) => {
-    if (typeof window === 'undefined') return
-    
-    try {
-      const stored = localStorage.getItem(RECENTLY_VIEWED_KEY)
-      let recentIds: string[] = stored ? JSON.parse(stored) : []
-      
-      // Remove if already exists
-      recentIds = recentIds.filter(id => id !== propertyId)
-      
-      // Add to front
-      recentIds.unshift(propertyId)
-      
-      // Keep only max items
-      recentIds = recentIds.slice(0, MAX_RECENT_ITEMS)
-      
-      localStorage.setItem(RECENTLY_VIEWED_KEY, JSON.stringify(recentIds))
-    } catch (e) {
-      console.error('Failed to track property view:', e)
-    }
-  }, [])
+    addToRecentlyViewed(propertyId)
+  }, [addToRecentlyViewed])
 
   // Helper function to get translated district name
   const getDistrictTranslation = (district: string) => {

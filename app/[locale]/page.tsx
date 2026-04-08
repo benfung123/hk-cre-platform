@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge'
 import { Search, MapPin, ChevronDown } from 'lucide-react'
 import { getProperties, getMarketStats, getDistrictStats } from '@/lib/data'
 import { BuildingMapWrapper } from '@/components/building-map-wrapper'
+import { HomeRecentlyViewed } from '@/components/favorites/home-recently-viewed'
 import Image from 'next/image'
 
 // Force dynamic rendering since we need database access
@@ -132,6 +133,13 @@ export default async function HomePage() {
               <div className="text-sm text-muted-foreground">{t('home.stats.avgPrice')}</div>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* Recently Viewed Section */}
+      <section className="py-12 border-b bg-background">
+        <div className="container">
+          <HomeRecentlyViewed />
         </div>
       </section>
 

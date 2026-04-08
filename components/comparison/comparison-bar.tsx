@@ -45,11 +45,11 @@ export function ComparisonBar() {
           return property ? { 
             id: property.id, 
             name: property.name, 
-            grade: property.grade,
+            grade: property.grade || '',
             image_url: undefined
           } : null
         })
-      )).filter((p): p is { id: string; name: string; grade: string; image_url?: string } => p !== null)
+      )).filter((p): p is PropertyPreview => p !== null)
       setProperties(loaded)
     }
 

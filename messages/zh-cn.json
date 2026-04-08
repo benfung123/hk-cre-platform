@@ -182,6 +182,7 @@
     "addToCompare": "比较选项 {count, plural, =0 {} other {({count})}}",
     "cancel": "取消",
     "inCompare": "比较中",
+    "saveAllToFavorites": "全部收藏",
     "grades": {
       "title": "级别分布"
     },

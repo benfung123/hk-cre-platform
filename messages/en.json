@@ -182,6 +182,7 @@
     "addToCompare": "Compare Selected {count, plural, =0 {} other {({count})}}",
     "cancel": "Cancel",
     "inCompare": "In Compare",
+    "saveAllToFavorites": "Save all to favorites",
     "grades": {
       "title": "Grade Distribution"
     },
