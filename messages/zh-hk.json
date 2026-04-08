@@ -203,6 +203,16 @@
       "title": "地區"
     }
   },
+  "toast": {
+    "addedToCompare": "已加入比較",
+    "removedFromCompare": "已從比較移除",
+    "addedToFavorites": "已加入收藏",
+    "removedFromFavorites": "已從收藏移除",
+    "compareFull": "比較列表已滿（最多3個）",
+    "alreadyInCompare": "已在比較列表中",
+    "alreadyInFavorites": "已在收藏中",
+    "favoritesFull": "收藏列表已滿"
+  },
   "analytics": {
     "page": {
       "subtitle": "香港商業地產全面市場分析及洞察"

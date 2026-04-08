@@ -203,6 +203,16 @@
       "title": "Districts"
     }
   },
+  "toast": {
+    "addedToCompare": "Added to compare",
+    "removedFromCompare": "Removed from compare",
+    "addedToFavorites": "Added to watchlist",
+    "removedFromFavorites": "Removed from watchlist",
+    "compareFull": "Compare list full (max 3)",
+    "alreadyInCompare": "Already in compare list",
+    "alreadyInFavorites": "Already in favorites",
+    "favoritesFull": "Favorites list full"
+  },
   "analytics": {
     "page": {
       "subtitle": "Comprehensive market analytics and insights for Hong Kong commercial real estate"

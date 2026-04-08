@@ -6,7 +6,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
-import { Clock, X, Heart, Eye, Trash2 } from 'lucide-react'
+import { Clock, X, Eye, Trash2 } from 'lucide-react'
 import { useFavorites } from '@/hooks/use-favorites'
 import { FavoriteButton } from './favorite-button'
 import { useTranslations } from 'next-intl'
@@ -195,16 +195,16 @@ function RecentlyViewedCard({ property, layout, onClick, onRemove }: RecentlyVie
             </div>
           </div>
           
-          {/* Action Buttons - Always visible on mobile, hover on desktop */}
+          {/* Action Buttons - Always visible on all devices */}
           <div className="flex items-center gap-1 ml-2 flex-shrink-0">
-            <div className="transition-opacity duration-200 opacity-100 sm:opacity-100 sm:group-hover:opacity-100" onClick={(e) => e.preventDefault()}>
+            <div onClick={(e) => e.preventDefault()}>
               <FavoriteButton propertyId={property.id} size="sm" />
             </div>
             {onRemove && (
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-8 w-8 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-200"
+                className="h-8 w-8 transition-opacity duration-200"
                 onClick={onRemove}
                 title={t('removeFromHistory') || 'Remove from history'}
               >

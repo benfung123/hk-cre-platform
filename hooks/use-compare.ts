@@ -1,6 +1,8 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import { useSimpleToast } from '@/components/ui/toast-provider'
+import { useTranslations } from 'next-intl'
 
 const STORAGE_KEY = 'hk-cre-compare'
 const MAX_COMPARE = 3
@@ -21,6 +23,8 @@ export interface CompareItem {
 export function useCompare() {
   const [compareList, setCompareList] = useState<string[]>([])
   const [isLoaded, setIsLoaded] = useState(false)
+  const toast = useSimpleToast()
+  const t = useTranslations('toast')
 
   // Load from localStorage on mount
   useEffect(() => {
@@ -46,25 +50,38 @@ export function useCompare() {
 
   const addToCompare = useCallback((propertyId: string) => {
     setCompareList(prev => {
-      if (prev.includes(propertyId)) return prev
-      if (prev.length >= MAX_COMPARE) return prev
+      if (prev.includes(propertyId)) {
+        toast.info(t('alreadyInCompare') || 'Already in compare list')
+        return prev
+      }
+      if (prev.length >= MAX_COMPARE) {
+        toast.warning(t('compareFull') || 'Compare list full (max 3)')
+        return prev
+      }
+      toast.success(t('addedToCompare') || 'Added to compare')
       return [...prev, propertyId]
     })
-  }, [])
+  }, [toast, t])
 
   const removeFromCompare = useCallback((propertyId: string) => {
     setCompareList(prev => prev.filter(id => id !== propertyId))
-  }, [])
+    toast.info(t('removedFromCompare') || 'Removed from compare')
+  }, [toast, t])
 
   const toggleCompare = useCallback((propertyId: string) => {
     setCompareList(prev => {
       if (prev.includes(propertyId)) {
+        toast.info(t('removedFromCompare') || 'Removed from compare')
         return prev.filter(id => id !== propertyId)
       }
-      if (prev.length >= MAX_COMPARE) return prev
+      if (prev.length >= MAX_COMPARE) {
+        toast.warning(t('compareFull') || 'Compare list full (max 3)')
+        return prev
+      }
+      toast.success(t('addedToCompare') || 'Added to compare')
       return [...prev, propertyId]
     })
-  }, [])
+  }, [toast, t])
 
   const isInCompare = useCallback((propertyId: string) => {
     return compareList.includes(propertyId)

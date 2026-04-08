@@ -16,9 +16,7 @@ import {
   Search,
   X,
   ChevronDown,
-  ChevronUp,
-  Heart,
-  Scale
+  ChevronUp
 } from 'lucide-react'
 import { BuildingMap } from '@/components/BuildingMap'
 import type { Property } from '@/types'
@@ -26,7 +24,7 @@ import { useTranslations } from 'next-intl'
 import { FavoriteButton } from '@/components/favorites/favorite-button'
 import { CompareButton } from '@/components/comparison/compare-button'
 import { ComparisonBar } from '@/components/comparison/comparison-bar'
-import { SourceBadge, DataFreshnessIndicator } from '@/components/data-source'
+import { SourceBadge } from '@/components/data-source'
 import { EmptyState } from '@/components/empty-state'
 import { useFavorites } from '@/hooks/use-favorites'
 
@@ -266,14 +264,10 @@ export function PropertyList({ properties }: PropertyListProps) {
                 </Card>
               </Link>
               
-              {/* Action Buttons - Always reserve space, visibility changes without affecting layout */}
+              {/* Action Buttons - Always visible on all devices */}
               <div className="absolute bottom-4 right-4 flex gap-2 z-10">
-                <div className="transition-opacity duration-200 opacity-100 sm:opacity-0 sm:group-hover:opacity-100">
-                  <CompareButton propertyId={property.id} size="sm" />
-                </div>
-                <div className="transition-opacity duration-200 opacity-100 sm:opacity-0 sm:group-hover:opacity-100">
-                  <FavoriteButton propertyId={property.id} size="sm" />
-                </div>
+                <CompareButton propertyId={property.id} size="sm" />
+                <FavoriteButton propertyId={property.id} size="sm" />
               </div>
             </div>
           ))}

@@ -2,6 +2,8 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { supabase } from '@/lib/supabase/client'
+import { useSimpleToast } from '@/components/ui/toast-provider'
+import { useTranslations } from 'next-intl'
 import type { Property } from '@/types'
 
 const FAVORITES_STORAGE_KEY = 'hk-cre-favorites'
@@ -48,6 +50,8 @@ export function useFavorites(): UseFavoritesReturn {
   })
   const [isLoaded, setIsLoaded] = useState(false)
   const isUpdatingRef = useRef(false)
+  const toast = useSimpleToast()
+  const t = useTranslations('toast')
 
   // Load from localStorage on mount (client-side only)
   useEffect(() => {
@@ -101,10 +105,11 @@ export function useFavorites(): UseFavoritesReturn {
 
     setState(prev => {
       if (prev.favorites.includes(propertyId)) {
+        toast.info(t('alreadyInFavorites') || 'Already in favorites')
         return prev
       }
       if (prev.favorites.length >= MAX_FAVORITES) {
-        console.warn(`Maximum favorites limit (${MAX_FAVORITES}) reached`)
+        toast.warning(t('favoritesFull') || 'Favorites list full')
         return prev
       }
       added = true
@@ -114,8 +119,11 @@ export function useFavorites(): UseFavoritesReturn {
       }
     })
 
+    if (added) {
+      toast.success(t('addedToFavorites') || 'Added to watchlist')
+    }
     return added
-  }, [])
+  }, [toast, t])
 
   /**
    * Remove a property from favorites
@@ -125,7 +133,8 @@ export function useFavorites(): UseFavoritesReturn {
       ...prev,
       favorites: prev.favorites.filter(id => id !== propertyId)
     }))
-  }, [])
+    toast.info(t('removedFromFavorites') || 'Removed from watchlist')
+  }, [toast, t])
 
   /**
    * Toggle a property's favorite status
@@ -144,7 +153,7 @@ export function useFavorites(): UseFavoritesReturn {
         }
       }
       if (prev.favorites.length >= MAX_FAVORITES) {
-        console.warn(`Maximum favorites limit (${MAX_FAVORITES}) reached`)
+        toast.warning(t('favoritesFull') || 'Favorites list full')
         return prev
       }
       isNowFavorite = true
@@ -154,8 +163,13 @@ export function useFavorites(): UseFavoritesReturn {
       }
     })
 
+    if (isNowFavorite) {
+      toast.success(t('addedToFavorites') || 'Added to watchlist')
+    } else {
+      toast.info(t('removedFromFavorites') || 'Removed from watchlist')
+    }
     return isNowFavorite
-  }, [])
+  }, [toast, t])
 
   /**
    * Check if a property is favorited

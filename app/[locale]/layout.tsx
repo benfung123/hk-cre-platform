@@ -6,6 +6,7 @@ import { getMessages, getTranslations } from 'next-intl/server';
 import { routing } from '@/src/i18n/routing';
 import { Analytics } from '@vercel/analytics/react';
 import { SpeedInsights } from '@vercel/speed-insights/next';
+import { ToastProvider } from '@/components/ui/toast-provider';
 import "../globals.css";
 import { Navbar } from "@/components/navbar";
 
@@ -122,13 +123,15 @@ export default async function RootLayout({
     >
       <body className="min-h-full flex flex-col bg-background">
         <NextIntlClientProvider messages={messages}>
-          <Navbar />
-          <main className="flex-1 px-4 sm:px-6 lg:px-8">{children}</main>
-          <footer className="border-t py-6 text-center text-sm text-muted-foreground">
-            <div className="container">
-              © {new Date().getFullYear()} HK CRE Platform. All rights reserved.
-            </div>
-          </footer>
+          <ToastProvider>
+            <Navbar />
+            <main className="flex-1 px-4 sm:px-6 lg:px-8">{children}</main>
+            <footer className="border-t py-6 text-center text-sm text-muted-foreground">
+              <div className="container">
+                © {new Date().getFullYear()} HK CRE Platform. All rights reserved.
+              </div>
+            </footer>
+          </ToastProvider>
         </NextIntlClientProvider>
         <Analytics />
         <SpeedInsights />
