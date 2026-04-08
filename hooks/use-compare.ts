@@ -6,6 +6,7 @@ import { useTranslations } from 'next-intl'
 
 const STORAGE_KEY = 'hk-cre-compare-v2'
 const MAX_COMPARE = 3
+const COMPARE_CHANGE_EVENT = 'hk-cre-compare-change'
 
 export interface CompareItem {
   id: string;
@@ -52,6 +53,37 @@ export function useCompare() {
     }
   }, [])
 
+  // Sync from other tabs (storage event)
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === STORAGE_KEY) {
+        const newValue = e.newValue ? JSON.parse(e.newValue) : []
+        console.log('[useCompare] Storage change detected:', newValue)
+        setCompareList(newValue)
+      }
+    }
+
+    window.addEventListener('storage', handleStorageChange)
+    return () => window.removeEventListener('storage', handleStorageChange)
+  }, [])
+
+  // Sync from same window (custom event)
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+
+    const handleCustomEvent = () => {
+      const stored = localStorage.getItem(STORAGE_KEY)
+      const newValue = stored ? JSON.parse(stored) : []
+      console.log('[useCompare] Custom event detected:', newValue)
+      setCompareList(newValue)
+    }
+
+    window.addEventListener(COMPARE_CHANGE_EVENT, handleCustomEvent)
+    return () => window.removeEventListener(COMPARE_CHANGE_EVENT, handleCustomEvent)
+  }, [])
+
   // Save to localStorage whenever list changes
   useEffect(() => {
     if (!isClient.current || compareList === null) return
@@ -59,6 +91,8 @@ export function useCompare() {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(compareList))
       console.log('[useCompare] Saved to localStorage:', compareList)
+      // Dispatch custom event for same-window sync
+      window.dispatchEvent(new CustomEvent(COMPARE_CHANGE_EVENT))
     } catch (e) {
       console.error('[useCompare] Failed to save compare list:', e)
     }
