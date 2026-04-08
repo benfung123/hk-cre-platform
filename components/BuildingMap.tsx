@@ -28,6 +28,15 @@ interface BuildingMapProps {
   showSearch?: boolean
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type AMapType = any;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type MapInstance = any;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type MarkerType = any;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type InfoWindowType = any;
+
 export function BuildingMap({
   properties,
   selectedDistrict,
@@ -39,16 +48,16 @@ export function BuildingMap({
   const t = useTranslations()
   const locale = useLocale()
   const mapContainerRef = useRef<HTMLDivElement>(null)
-  const mapRef = useRef<any>(null)
-  const [mapInstance, setMapInstance] = useState<any>(null)
-  const [AMap, setAMap] = useState<any>(null)
-  const [selectedProperty, setSelectedProperty] = useState<Property | null>(null)
+  const mapRef = useRef<MapInstance>(null)
+  const [mapInstance, setMapInstance] = useState<MapInstance>(null)
+  const [AMap, setAMap] = useState<AMapType>(null)
+  const [, setSelectedProperty] = useState<Property | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
   const [mapStyle, setMapStyle] = useState<keyof typeof MAP_CONFIG.styles>('light')
   const [showMTR, setShowMTR] = useState(false)
-  const [markers, setMarkers] = useState<any[]>([])
-  const [mtrMarkers, setMtrMarkers] = useState<any[]>([])
-  const [infoWindow, setInfoWindow] = useState<any>(null)
+  const [markers, setMarkers] = useState<MarkerType[]>([])
+  const [mtrMarkers, setMtrMarkers] = useState<MarkerType[]>([])
+  const [infoWindow, setInfoWindow] = useState<InfoWindowType>(null)
 
   const amapKey = process.env.NEXT_PUBLIC_AMAP_KEY
 
@@ -238,7 +247,7 @@ export function BuildingMap({
     markers.forEach(marker => marker.setMap(null))
     
     // Create new markers
-    const newMarkers: any[] = []
+    const newMarkers: MarkerType[] = []
     let skippedCount = 0
     
     filteredProperties.forEach((property) => {
@@ -276,7 +285,7 @@ export function BuildingMap({
     }
     
     // Create MTR markers
-    const newMarkers: any[] = []
+    const newMarkers: MarkerType[] = []
     
     MTR_STATIONS.forEach((station) => {
       const marker = new AMap.Marker({

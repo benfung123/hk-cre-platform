@@ -179,7 +179,7 @@ function RecentlyViewedCard({ property, layout, onClick, onRemove }: RecentlyVie
   const t = useTranslations('favorites')
 
   const cardContent = (
-    <Card className="h-full hover:shadow-md transition-shadow group relative">
+    <Card className="h-full hover:shadow-md transition-shadow duration-200 group relative">
       <CardContent className="p-4">
         <div className="flex items-start justify-between gap-2">
           <div className="flex-1 min-w-0">
@@ -191,20 +191,20 @@ function RecentlyViewedCard({ property, layout, onClick, onRemove }: RecentlyVie
             </p>
             <div className="flex items-center gap-2 mt-2">
               <Badge variant="outline" className="text-xs">{property.grade}</Badge>
-              <span className="text-xs text-muted-foreground">{property.district}</span>
+              <span className="text-xs text-muted-foreground truncate">{property.district}</span>
             </div>
           </div>
           
-          {/* Action Buttons */}
-          <div className="flex items-center gap-1 ml-2">
-            <div onClick={(e) => e.preventDefault()}>
+          {/* Action Buttons - Always visible on mobile, hover on desktop */}
+          <div className="flex items-center gap-1 ml-2 flex-shrink-0">
+            <div className="transition-opacity duration-200 opacity-100 sm:opacity-100 sm:group-hover:opacity-100" onClick={(e) => e.preventDefault()}>
               <FavoriteButton propertyId={property.id} size="sm" />
             </div>
             {onRemove && (
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
+                className="h-8 w-8 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-200"
                 onClick={onRemove}
                 title={t('removeFromHistory') || 'Remove from history'}
               >

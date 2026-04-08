@@ -225,16 +225,16 @@ export function PropertyList({ properties }: PropertyListProps) {
           {filteredProperties.map((property) => (
             <div key={property.id} className="relative group">
               <Link href={`/properties/${property.id}`} onClick={() => trackPropertyView(property.id)}>
-                <Card className="h-full hover:shadow-lg transition-all duration-300 overflow-hidden">
-                  <CardHeader>
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1 min-w-0 pr-2">
+                <Card className="h-full hover:shadow-lg transition-shadow duration-200 overflow-hidden">
+                  <CardHeader className="pb-2">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex-1 min-w-0">
                         <CardTitle className="line-clamp-1">{property.name}</CardTitle>
                         <CardDescription className="line-clamp-1">
                           {property.address}
                         </CardDescription>
                       </div>
-                      <div className="flex items-center gap-1">
+                      <div className="flex items-center gap-1 flex-shrink-0">
                         <SourceBadge 
                           source="rvd" 
                           lastUpdated={property.updated_at}
@@ -248,11 +248,11 @@ export function PropertyList({ properties }: PropertyListProps) {
                   <CardContent>
                     <div className="flex items-center gap-4 text-sm text-muted-foreground">
                       <div className="flex items-center">
-                        <MapPin className="h-4 w-4 mr-1" />
-                        {getDistrictTranslation(property.district)}
+                        <MapPin className="h-4 w-4 mr-1 flex-shrink-0" />
+                        <span className="truncate">{getDistrictTranslation(property.district)}</span>
                       </div>
                       {property.year_built && (
-                        <div>Built {property.year_built}</div>
+                        <div className="flex-shrink-0">Built {property.year_built}</div>
                       )}
                     </div>
                     {property.total_sqft && (
@@ -260,14 +260,20 @@ export function PropertyList({ properties }: PropertyListProps) {
                         {(property.total_sqft / 1000000).toFixed(1)}M {t('properties.card.totalArea')}
                       </div>
                     )}
+                    {/* Spacer for action buttons to prevent layout shift */}
+                    <div className="h-10" />
                   </CardContent>
                 </Card>
               </Link>
               
-              {/* Action Buttons - Bottom Right */}
-              <div className="absolute bottom-4 right-4 flex gap-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
-                <CompareButton propertyId={property.id} size="sm" />
-                <FavoriteButton propertyId={property.id} size="sm" />
+              {/* Action Buttons - Always reserve space, visibility changes without affecting layout */}
+              <div className="absolute bottom-4 right-4 flex gap-2 z-10">
+                <div className="transition-opacity duration-200 opacity-100 sm:opacity-0 sm:group-hover:opacity-100">
+                  <CompareButton propertyId={property.id} size="sm" />
+                </div>
+                <div className="transition-opacity duration-200 opacity-100 sm:opacity-0 sm:group-hover:opacity-100">
+                  <FavoriteButton propertyId={property.id} size="sm" />
+                </div>
               </div>
             </div>
           ))}

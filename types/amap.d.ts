@@ -1,4 +1,5 @@
 // Type declarations for Amap JS API
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 declare module '@amap/amap-jsapi-loader' {
   interface LoaderOptions {

@@ -82,102 +82,104 @@ export function ComparisonBar() {
   }
 
   return (
-    <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 animate-in slide-in-from-bottom-4 duration-300">
-      <div className="bg-background border shadow-lg rounded-lg px-4 py-3 flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 max-w-[95vw] sm:max-w-none">
-        {/* Selected Properties Preview */}
-        <div className="flex items-center gap-3 flex-wrap">
-          <div className="flex items-center gap-2 bg-blue-50 dark:bg-blue-950 px-3 py-1.5 rounded-full">
-            <div className="bg-blue-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-medium">
-              {compareCount}
+    <div className="fixed bottom-0 left-0 right-0 z-50 translate-y-0">
+      <div className="max-w-screen-2xl mx-auto px-4 pb-4">
+        <div className="bg-background border shadow-lg rounded-lg px-4 py-3 flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 max-w-fit mx-auto">
+          {/* Selected Properties Preview */}
+          <div className="flex items-center gap-3 flex-wrap">
+            <div className="flex items-center gap-2 bg-blue-50 dark:bg-blue-950 px-3 py-1.5 rounded-full">
+              <div className="bg-blue-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-medium">
+                {compareCount}
+              </div>
+              <span className="text-sm font-medium text-blue-900 dark:text-blue-100">
+                {t('propertiesSelected', { count: compareCount })}
+              </span>
             </div>
-            <span className="text-sm font-medium text-blue-900 dark:text-blue-100">
-              {t('propertiesSelected', { count: compareCount })}
-            </span>
+
+            {/* Property Thumbnails */}
+            <div className="flex items-center gap-1">
+              {properties.map((property) => (
+                <TooltipProvider key={property.id}>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div 
+                        className={cn(
+                          "relative group flex items-center gap-2 bg-muted rounded-full pl-1 pr-3 py-1 cursor-pointer hover:bg-accent transition-colors",
+                          isFavorite(property.id) && "ring-2 ring-red-200"
+                        )}
+                      >
+                        <div className="w-7 h-7 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center text-xs font-bold text-blue-600 dark:text-blue-300">
+                          {property.grade}
+                        </div>
+                        <span className="text-sm truncate max-w-[100px] hidden sm:inline">{property.name}</span>
+                        
+                        {/* Favorite indicator */}
+                        {isFavorite(property.id) && (
+                          <Heart className="h-3 w-3 text-red-500 fill-red-500 absolute -top-1 -right-1" />
+                        )}
+                        
+                        <button
+                          onClick={() => removeFromCompare(property.id)}
+                          className="ml-1 p-0.5 rounded-full hover:bg-destructive hover:text-destructive-foreground transition-colors"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>{property.name}</p>
+                      {isFavorite(property.id) && <p className="text-xs text-red-500">{tf('saved')}</p>}
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              ))}
+            </div>
           </div>
 
-          {/* Property Thumbnails */}
-          <div className="flex items-center gap-1">
-            {properties.map((property) => (
-              <TooltipProvider key={property.id}>
+          <div className="hidden sm:block h-6 w-px bg-border" />
+
+          {/* Action Buttons */}
+          <div className="flex items-center gap-2 w-full sm:w-auto">
+            {/* Add All to Favorites Button */}
+            {showAddAllFavorites && (
+              <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <div 
-                      className={cn(
-                        "relative group flex items-center gap-2 bg-muted rounded-full pl-1 pr-3 py-1 cursor-pointer hover:bg-accent transition-colors",
-                        isFavorite(property.id) && "ring-2 ring-red-200"
-                      )}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="rounded-full"
+                      onClick={handleAddAllToFavorites}
                     >
-                      <div className="w-7 h-7 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center text-xs font-bold text-blue-600 dark:text-blue-300">
-                        {property.grade}
-                      </div>
-                      <span className="text-sm truncate max-w-[100px] hidden sm:inline">{property.name}</span>
-                      
-                      {/* Favorite indicator */}
-                      {isFavorite(property.id) && (
-                        <Heart className="h-3 w-3 text-red-500 fill-red-500 absolute -top-1 -right-1" />
-                      )}
-                      
-                      <button
-                        onClick={() => removeFromCompare(property.id)}
-                        className="ml-1 p-0.5 rounded-full hover:bg-destructive hover:text-destructive-foreground transition-colors"
-                      >
-                        <X className="h-3 w-3" />
-                      </button>
-                    </div>
+                      <Heart className="h-4 w-4 mr-1" />
+                      <span className="hidden sm:inline">{tf('save')}</span>
+                    </Button>
                   </TooltipTrigger>
                   <TooltipContent>
-                    <p>{property.name}</p>
-                    {isFavorite(property.id) && <p className="text-xs text-red-500">{tf('saved')}</p>}
+                    <p>{tf('saveAllToFavorites') || 'Save all to favorites'}</p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
-            ))}
-          </div>
-        </div>
+            )}
 
-        <div className="hidden sm:block h-6 w-px bg-border" />
-
-        {/* Action Buttons */}
-        <div className="flex items-center gap-2 w-full sm:w-auto">
-          {/* Add All to Favorites Button */}
-          {showAddAllFavorites && (
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="rounded-full"
-                    onClick={handleAddAllToFavorites}
-                  >
-                    <Heart className="h-4 w-4 mr-1" />
-                    <span className="hidden sm:inline">{tf('save')}</span>
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>{tf('saveAllToFavorites') || 'Save all to favorites'}</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          )}
-
-          <Link href="/compare" className="flex-1 sm:flex-none">
-            <Button size="sm" className="rounded-full w-full sm:w-auto">
-              <Scale className="h-4 w-4 mr-2" />
-              {t('compareButton')}
-              <ArrowRight className="h-4 w-4 ml-2" />
+            <Link href="/compare" className="flex-1 sm:flex-none">
+              <Button size="sm" className="rounded-full w-full sm:w-auto">
+                <Scale className="h-4 w-4 mr-2" />
+                {t('compareButton')}
+                <ArrowRight className="h-4 w-4 ml-2" />
+              </Button>
+            </Link>
+            
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="rounded-full h-8 w-8 p-0"
+              onClick={clearCompare}
+              title={t('clearAll')}
+            >
+              <X className="h-4 w-4" />
             </Button>
-          </Link>
-          
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            className="rounded-full h-8 w-8 p-0"
-            onClick={clearCompare}
-            title={t('clearAll')}
-          >
-            <X className="h-4 w-4" />
-          </Button>
+          </div>
         </div>
       </div>
     </div>

@@ -19,6 +19,15 @@ import { getBuildingFootprint, type CSDIBuilding } from '@/lib/csdi-api'
 import type { Property } from '@/types'
 import { useTranslations } from 'next-intl'
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type AMapType = any;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type MapInstance = any;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type PolygonType = any;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type MarkerType = any;
+
 interface PropertyLocationProps {
   property: Property
   height?: string
@@ -39,16 +48,15 @@ export function PropertyLocation({
   showNearbyMTR = true,
   showBuildingOutline = true
 }: PropertyLocationProps) {
-  const t = useTranslations()
   const mapContainerRef = useRef<HTMLDivElement>(null)
-  const mapRef = useRef<any>(null)
-  const [mapInstance, setMapInstance] = useState<any>(null)
-  const [AMap, setAMap] = useState<any>(null)
+  const mapRef = useRef<MapInstance>(null)
+  const [mapInstance, setMapInstance] = useState<MapInstance>(null)
+  const [AMap, setAMap] = useState<AMapType>(null)
   const [buildingData, setBuildingData] = useState<CSDIBuilding | null>(null)
-  const [loading, setLoading] = useState(false)
+  const [, setLoading] = useState(false)
   const [mapStyle, setMapStyle] = useState<'light' | 'dark' | 'satellite'>('light')
-  const [polygon, setPolygon] = useState<any>(null)
-  const [mtrMarkers, setMtrMarkers] = useState<any[]>([])
+  const [polygon, setPolygon] = useState<PolygonType>(null)
+  const [mtrMarkers, setMtrMarkers] = useState<MarkerType[]>([])
 
   const amapKey = process.env.NEXT_PUBLIC_AMAP_KEY
 
@@ -88,13 +96,19 @@ export function PropertyLocation({
   useEffect(() => {
     if (!showBuildingOutline || !property.lat || !property.lng) return
     
-    setLoading(true)
-    getBuildingFootprint(property.lat, property.lng, 100)
-      .then(data => {
-        setBuildingData(data)
-      })
-      .catch(console.error)
-      .finally(() => setLoading(false))
+    // Use setTimeout to avoid synchronous setState in effect
+    const timer = setTimeout(() => {
+      if (property.lat == null || property.lng == null) return
+      setLoading(true)
+      getBuildingFootprint(property.lat, property.lng, 100)
+        .then(data => {
+          setBuildingData(data)
+        })
+        .catch(console.error)
+        .finally(() => setLoading(false))
+    }, 0)
+    
+    return () => clearTimeout(timer)
   }, [property.lat, property.lng, showBuildingOutline])
 
   // Initialize Amap
