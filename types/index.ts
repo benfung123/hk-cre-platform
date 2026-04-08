@@ -4,6 +4,7 @@ export interface Property {
   address: string;
   district: string;
   grade: 'A+' | 'A' | 'B' | 'C';
+  property_type?: 'office' | 'retail' | 'industrial' | 'flatted_factory' | 'residential';
   year_built: number | null;
   total_sqft: number | null;
   floors: number | null;
