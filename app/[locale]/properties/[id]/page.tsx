@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Separator } from '@/components/ui/separator'
 import { ArrowLeft, MapPin, Calendar, DollarSign, Users, Heart } from 'lucide-react'
-import { getPropertyById, getPropertyTransactions, getPropertyTenancies, getDistrictAverageForProperty } from '@/lib/data'
+import { getPropertyById, getPropertySales, getPropertyTenancies, getDistrictAverageForProperty } from '@/lib/data'
 import { PropertyLocation } from '@/components/PropertyLocation'
 import { PriceHistoryChart } from '@/components/charts/price-history-chart'
 import { SourceBadge, DataFreshnessIndicator, DataProvenanceDrawer } from '@/components/data-source'
@@ -60,9 +60,9 @@ export default async function PropertyPage({ params }: PropertyPageProps) {
   const { id } = await params
   const t = await getTranslations()
   
-  const [property, transactions, tenancies, districtAverage] = await Promise.all([
+  const [property, sales, tenancies, districtAverage] = await Promise.all([
     getPropertyById(id),
-    getPropertyTransactions(id),
+    getPropertySales(id),
     getPropertyTenancies(id),
     getPropertyById(id).then(p => p ? getDistrictAverageForProperty(p.district) : 0)
   ])
@@ -196,9 +196,9 @@ export default async function PropertyPage({ params }: PropertyPageProps) {
 
         {/* Price History Chart */}
         <PriceHistoryChart 
-          transactions={transactions}
-          title="Rental Price History"
-          description="Historical rental rates per square foot"
+          transactions={sales}
+          title="Price History"
+          description="Historical sale prices per square foot"
           districtAverage={districtAverage > 0 ? districtAverage : undefined}
         />
 
@@ -262,7 +262,7 @@ export default async function PropertyPage({ params }: PropertyPageProps) {
           <TabsList>
             <TabsTrigger value="transactions">
               <DollarSign className="h-4 w-4 mr-2" />
-              {t('propertyDetail.tabs.transactions')} ({transactions.length})
+              {t('propertyDetail.tabs.transactions')} ({sales.length})
             </TabsTrigger>
             <TabsTrigger value="tenancies">
               <Users className="h-4 w-4 mr-2" />
@@ -271,40 +271,40 @@ export default async function PropertyPage({ params }: PropertyPageProps) {
           </TabsList>
 
           <TabsContent value="transactions" className="space-y-4">
-            {transactions.length > 0 ? (
+            {sales.length > 0 ? (
               <div className="grid gap-4">
-                {transactions.map((transaction) => (
-                  <Card key={transaction.id}>
+                {sales.map((sale) => (
+                  <Card key={sale.id}>
                     <CardContent className="p-4">
                       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                         <div>
                           <div className="flex items-center gap-2">
-                            <Badge variant={transaction.type === 'sale' ? 'default' : 'secondary'}>
-                              {transaction.type === 'sale' ? t('propertyDetail.transaction.sale') : t('propertyDetail.transaction.lease')}
+                            <Badge variant="default">
+                              {t('propertyDetail.transaction.sale')}
                             </Badge>
-                            {transaction.tenant_name && (
-                              <span className="text-sm">{transaction.tenant_name}</span>
+                            {sale.tenant_name && (
+                              <span className="text-sm">{sale.tenant_name}</span>
                             )}
                           </div>
                           <div className="text-sm text-muted-foreground mt-1">
-                            {new Date(transaction.date).toLocaleDateString()}
+                            {new Date(sale.date).toLocaleDateString()}
                           </div>
                         </div>
                         
                         <div className="text-right">
-                          {transaction.price && (
+                          {sale.price && (
                             <div className="font-medium">
-                              ${transaction.price.toLocaleString()}
+                              ${sale.price.toLocaleString()}
                             </div>
                           )}
-                          {transaction.price_per_sqft && (
+                          {sale.price_per_sqft && (
                             <div className="text-sm text-muted-foreground">
-                              ${transaction.price_per_sqft}/sqft
+                              ${sale.price_per_sqft}/sqft
                             </div>
                           )}
-                          {transaction.floor_area && (
+                          {sale.floor_area && (
                             <div className="text-sm text-muted-foreground">
-                              {transaction.floor_area.toLocaleString()} sqft
+                              {sale.floor_area.toLocaleString()} sqft
                             </div>
                           )}
                         </div>

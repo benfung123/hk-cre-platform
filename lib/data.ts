@@ -112,6 +112,24 @@ export async function getPropertyTransactions(propertyId: string): Promise<Trans
   return data || []
 }
 
+export async function getPropertySales(propertyId: string): Promise<Transaction[]> {
+  const supabase = await createClient()
+  
+  const { data, error } = await supabase
+    .from('transactions')
+    .select('*')
+    .eq('property_id', propertyId)
+    .eq('type', 'sale')
+    .order('date', { ascending: false })
+
+  if (error) {
+    console.error('Error fetching sales:', error)
+    return []
+  }
+
+  return data || []
+}
+
 export async function getPropertyTenancies(propertyId: string): Promise<Tenancy[]> {
   const supabase = await createClient()
   
