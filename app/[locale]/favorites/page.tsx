@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -50,20 +50,22 @@ export default function FavoritesPage() {
   const [loading, setLoading] = useState(true)
   const [selectedForCompare, setSelectedForCompare] = useState<Set<string>>(new Set())
   const [showCompareMode, setShowCompareMode] = useState(false)
+  const hasLoadedRef = useRef(false)
 
-  // Load favorites data
+  // Load favorites data - only run once
   useEffect(() => {
     async function loadProperties() {
-      if (!isLoaded) {
-        console.log('[FavoritesPage] Waiting for favorites to load...')
+      if (!isLoaded || hasLoadedRef.current) {
+        console.log('[FavoritesPage] Skipping load - not ready or already loaded')
         return
       }
       
-      console.log('[FavoritesPage] Loading properties, favorites:', favorites)
+      console.log('[FavoritesPage] Loading properties, favorites count:', favorites.length)
+      hasLoadedRef.current = true
       setLoading(true)
       try {
         const loaded = await getFavorites()
-        console.log('[FavoritesPage] Loaded properties:', loaded)
+        console.log('[FavoritesPage] Loaded properties:', loaded.length)
         setProperties(loaded)
       } catch (e) {
         console.error('[FavoritesPage] Failed to load favorites:', e)
@@ -73,8 +75,7 @@ export default function FavoritesPage() {
     }
 
     loadProperties()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [favorites, isLoaded])
+  }, [isLoaded, getFavorites])
 
   // Sync selected items with compare list
   useEffect(() => {
