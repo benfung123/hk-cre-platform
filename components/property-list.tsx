@@ -244,7 +244,7 @@ export function PropertyList({ properties }: PropertyListProps) {
           {filteredProperties.map((property) => (
             <div key={property.id} className="relative group">
               <Link href={`/properties/${property.id}`} onClick={() => trackPropertyView(property.id)}>
-                <Card className="h-full hover:shadow-lg transition-all duration-300">
+                <Card className="h-full hover:shadow-lg transition-all duration-300 overflow-hidden">
                   <CardHeader>
                     <div className="flex items-start justify-between">
                       <div className="flex-1 min-w-0 pr-2">
@@ -283,8 +283,8 @@ export function PropertyList({ properties }: PropertyListProps) {
                 </Card>
               </Link>
               
-              {/* Action Buttons */}
-              <div className="absolute top-2 right-2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+              {/* Action Buttons - Bottom Right */}
+              <div className="absolute bottom-4 right-4 flex gap-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
                 <CompareButton propertyId={property.id} size="sm" />
                 <FavoriteButton propertyId={property.id} size="sm" />
               </div>

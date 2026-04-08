@@ -1,8 +1,8 @@
 'use client'
 
-import { Scale, X } from 'lucide-react'
+import { Scale, X, Check } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { useComparison } from '@/hooks/use-comparison'
+import { useCompare } from '@/hooks/use-compare'
 import { cn } from '@/lib/utils'
 import { useTranslations } from 'next-intl'
 import {
@@ -26,9 +26,9 @@ export function CompareButton({
   className 
 }: CompareButtonProps) {
   const t = useTranslations('compare')
-  const { isInComparison, toggleComparison, canAddMore, isFull, isLoaded } = useComparison()
+  const { isInCompare, toggleCompare, canAddMore, isFull, isLoaded } = useCompare()
   
-  const isActive = isInComparison(propertyId)
+  const isActive = isInCompare(propertyId)
   
   const sizeClasses = {
     sm: 'h-8 w-8',
@@ -62,22 +62,27 @@ export function CompareButton({
       onClick={(e) => {
         e.preventDefault()
         e.stopPropagation()
-        toggleComparison(propertyId)
+        toggleCompare(propertyId)
       }}
       disabled={!isActive && !canAddMore}
       className={cn(
         'transition-all duration-200',
-        isActive && 'bg-blue-500 hover:bg-blue-600 border-blue-500',
+        isActive && 'bg-blue-500 hover:bg-blue-600 border-blue-500 text-white',
         !showLabel && sizeClasses[size],
         className
       )}
     >
       {isActive ? (
-        <X className={cn(iconSizes[size], showLabel && 'mr-2')} />
+        <>
+          <Check className={cn(iconSizes[size], showLabel && 'mr-2')} />
+          {showLabel && t('remove')}
+        </>
       ) : (
-        <Scale className={cn(iconSizes[size], showLabel && 'mr-2')} />
+        <>
+          <Scale className={cn(iconSizes[size], showLabel && 'mr-2')} />
+          {showLabel && t('add')}
+        </>
       )}
-      {showLabel && (isActive ? t('remove') : t('add'))}
     </Button>
   )
 
@@ -87,7 +92,18 @@ export function CompareButton({
         <Tooltip>
           <TooltipTrigger asChild>
             <div className={className}>
-              {button}
+              <Button
+                variant="outline"
+                size={showLabel ? 'default' : 'icon'}
+                disabled
+                className={cn(
+                  !showLabel && sizeClasses[size],
+                  className
+                )}
+              >
+                <Scale className={cn(iconSizes[size], showLabel && 'mr-2')} />
+                {showLabel && t('add')}
+              </Button>
             </div>
           </TooltipTrigger>
           <TooltipContent>

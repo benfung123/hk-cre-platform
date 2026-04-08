@@ -13,7 +13,7 @@ export default async function ComparePage() {
   const t = await getTranslations('compare')
   
   return (
-    <div className="container py-8">
+    <div className="container py-8 pb-32">
       <div className="flex flex-col gap-8">
         <div>
           <h1 className="text-3xl font-bold">{t('pageTitle')}</h1>

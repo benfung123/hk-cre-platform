@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
@@ -16,29 +16,40 @@ import {
   X,
   TrendingUp,
   TrendingDown,
-  Minus
+  Minus,
+  Maximize2,
+  BarChart3
 } from 'lucide-react'
-import { useComparison } from '@/hooks/use-comparison'
+import { useCompare } from '@/hooks/use-compare'
 import { usePropertyData } from '@/hooks/use-property-data'
 import type { Property, Transaction } from '@/types'
 import { useTranslations } from 'next-intl'
 import { Skeleton } from '@/components/ui/skeleton'
+import { cn } from '@/lib/utils'
 
 interface PropertyWithTransactions extends Property {
   transactions: Transaction[]
 }
 
+// Grade colors for visual coding
+const gradeColors: Record<string, string> = {
+  'A+': 'bg-emerald-500 text-white',
+  'A': 'bg-green-500 text-white',
+  'B': 'bg-yellow-500 text-black',
+  'C': 'bg-orange-500 text-white'
+}
+
 export function ComparisonView() {
   const t = useTranslations('compare')
   const tp = useTranslations('propertyDetail')
-  const { comparisonList, removeFromComparison, clearComparison } = useComparison()
+  const { compareList, removeFromCompare, clearCompare } = useCompare()
   const { getPropertyById, getPropertyTransactions } = usePropertyData()
   const [properties, setProperties] = useState<PropertyWithTransactions[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     async function loadProperties() {
-      if (comparisonList.length === 0) {
+      if (compareList.length === 0) {
         setProperties([])
         setLoading(false)
         return
@@ -46,7 +57,7 @@ export function ComparisonView() {
 
       setLoading(true)
       const loaded = await Promise.all(
-        comparisonList.map(async (id) => {
+        compareList.map(async (id) => {
           const property = await getPropertyById(id)
           const transactions = await getPropertyTransactions(id)
           return property ? { ...property, transactions } : null
@@ -57,7 +68,7 @@ export function ComparisonView() {
     }
 
     loadProperties()
-  }, [comparisonList, getPropertyById, getPropertyTransactions])
+  }, [compareList, getPropertyById, getPropertyTransactions])
 
   if (loading) {
     return <ComparisonSkeleton />
@@ -67,7 +78,7 @@ export function ComparisonView() {
     return <EmptyComparison />
   }
 
-  // Calculate stats for comparison
+  // Calculate stats for comparison highlighting
   const getLatestRent = (transactions: Transaction[]) => {
     const leases = transactions.filter(t => t.type === 'lease' && t.price_per_sqft)
     return leases.length > 0 ? leases[0].price_per_sqft : null
@@ -79,16 +90,36 @@ export function ComparisonView() {
     return leases.reduce((sum, t) => sum + (t.price_per_sqft || 0), 0) / leases.length
   }
 
-  const rents = properties.map(p => getLatestRent(p.transactions))
-  const avgRents = properties.map(p => getAvgRent(p.transactions))
+  const getLatestSalePrice = (transactions: Transaction[]) => {
+    const sales = transactions.filter(t => t.type === 'sale' && t.price_per_sqft)
+    return sales.length > 0 ? sales[0].price_per_sqft : null
+  }
+
+  const rents = properties.map(p => getLatestRent(p.transactions)).filter((r): r is number => r !== null)
+  const prices = properties.map(p => getLatestSalePrice(p.transactions)).filter((p): p is number => p !== null)
+  const years = properties.map(p => p.year_built).filter((y): y is number => y !== null)
+  const areas = properties.map(p => p.total_sqft).filter((a): a is number => a !== null)
   
-  const maxRent = Math.max(...rents.filter((r): r is number => r !== null))
-  const minRent = Math.min(...rents.filter((r): r is number => r !== null))
+  const maxRent = rents.length > 0 ? Math.max(...rents) : null
+  const minRent = rents.length > 0 ? Math.min(...rents) : null
+  const maxPrice = prices.length > 0 ? Math.max(...prices) : null
+  const minPrice = prices.length > 0 ? Math.min(...prices) : null
+  const newestYear = years.length > 0 ? Math.max(...years) : null
+  const oldestYear = years.length > 0 ? Math.min(...years) : null
+  const largestArea = areas.length > 0 ? Math.max(...areas) : null
+  const smallestArea = areas.length > 0 ? Math.min(...areas) : null
+
+  // Get grid layout based on number of properties
+  const getGridClass = () => {
+    if (properties.length === 1) return 'grid-cols-1 max-w-2xl mx-auto'
+    if (properties.length === 2) return 'grid-cols-1 md:grid-cols-2'
+    return 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'
+  }
 
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div className="flex items-center gap-4">
           <Link href="/properties">
             <Button variant="ghost" size="sm">
@@ -97,35 +128,96 @@ export function ComparisonView() {
             </Button>
           </Link>
         </div>
-        <Button variant="outline" size="sm" onClick={clearComparison}>
-          <X className="h-4 w-4 mr-2" />
-          {t('clearAll')}
-        </Button>
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-muted-foreground">
+            {t('propertiesSelected', { count: properties.length })}
+          </span>
+          <Button variant="outline" size="sm" onClick={clearCompare}>
+            <X className="h-4 w-4 mr-2" />
+            {t('clearAll')}
+          </Button>
+        </div>
       </div>
 
+      {/* Comparison Summary */}
+      {properties.length > 1 && (
+        <Card className="bg-muted/50">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-2 mb-3">
+              <BarChart3 className="h-4 w-4 text-muted-foreground" />
+              <span className="text-sm font-medium">{t('comparisonSummary', { defaultValue: 'Comparison Summary' })}</span>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
+              {rents.length > 0 && (
+                <>
+                  <div>
+                    <span className="text-muted-foreground">{t('rentRange', { defaultValue: 'Rent Range' })}:</span>
+                    <div className="font-medium">${minRent?.toFixed(2)} - ${maxRent?.toFixed(2)}</div>
+                  </div>
+                </>
+              )}
+              {years.length > 0 && (
+                <div>
+                  <span className="text-muted-foreground">{t('yearRange', { defaultValue: 'Year Range' })}:</span>
+                  <div className="font-medium">{oldestYear} - {newestYear}</div>
+                </div>
+              )}
+              {areas.length > 0 && (
+                <div>
+                  <span className="text-muted-foreground">{t('areaRange', { defaultValue: 'Area Range' })}:</span>
+                  <div className="font-medium">{(smallestArea! / 1000000).toFixed(1)}M - {(largestArea! / 1000000).toFixed(1)}M sqft</div>
+                </div>
+              )}
+              <div>
+                <span className="text-muted-foreground">{t('districts', { defaultValue: 'Districts' })}:</span>
+                <div className="font-medium">{[...new Set(properties.map(p => p.district))].length}</div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Comparison Grid */}
-      <div className={`grid gap-4 ${properties.length === 2 ? 'grid-cols-1 md:grid-cols-2' : properties.length === 3 ? 'grid-cols-1 md:grid-cols-3' : 'grid-cols-1'}`}>
+      <div className={`grid gap-4 ${getGridClass()}`}>
         {properties.map((property) => {
           const latestRent = getLatestRent(property.transactions)
           const avgRent = getAvgRent(property.transactions)
+          const latestPrice = getLatestSalePrice(property.transactions)
+          
+          // Determine highlighting
+          const rentIsHighest = latestRent !== null && maxRent !== null && latestRent === maxRent && properties.length > 1
+          const rentIsLowest = latestRent !== null && minRent !== null && latestRent === minRent && properties.length > 1
+          const priceIsHighest = latestPrice !== null && maxPrice !== null && latestPrice === maxPrice && properties.length > 1
+          const priceIsLowest = latestPrice !== null && minPrice !== null && latestPrice === minPrice && properties.length > 1
+          const isNewest = property.year_built !== null && newestYear !== null && property.year_built === newestYear && properties.length > 1
+          const isLargest = property.total_sqft !== null && largestArea !== null && property.total_sqft === largestArea && properties.length > 1
           
           return (
-            <Card key={property.id} className="relative">
+            <Card key={property.id} className="relative overflow-hidden">
+              {/* Remove Button */}
               <Button
                 variant="ghost"
                 size="sm"
-                className="absolute top-2 right-2 h-8 w-8 p-0"
-                onClick={() => removeFromComparison(property.id)}
+                className="absolute top-2 right-2 h-8 w-8 p-0 z-10 bg-background/80 backdrop-blur-sm"
+                onClick={() => removeFromCompare(property.id)}
               >
                 <X className="h-4 w-4" />
               </Button>
-              
-              <CardHeader>
-                <div className="pr-8">
-                  <CardTitle className="text-lg">{property.name}</CardTitle>
-                  <p className="text-sm text-muted-foreground">{property.address}</p>
+
+              {/* Property Image Placeholder */}
+              <div className="h-32 bg-gradient-to-br from-blue-100 to-blue-200 dark:from-blue-900 dark:to-blue-800 flex items-center justify-center relative"
+>
+                <Building2 className="h-12 w-12 text-blue-400 dark:text-blue-600" />
+                <div className="absolute top-2 left-2">
+                  <Badge className={cn("font-bold", gradeColors[property.grade] || 'bg-gray-500')}>
+                    Grade {property.grade}
+                  </Badge>
                 </div>
-                <Badge className="mt-2">{property.grade}</Badge>
+              </div>
+              
+              <CardHeader className="pb-2">
+                <CardTitle className="text-lg pr-8">{property.name}</CardTitle>
+                <CardDescription className="line-clamp-1">{property.address}</CardDescription>
               </CardHeader>
               
               <CardContent className="space-y-4">
@@ -135,81 +227,150 @@ export function ComparisonView() {
                   <span>{property.district}</span>
                 </div>
 
-                {/* Year Built */}
-                {property.year_built && (
-                  <div className="flex items-center gap-2 text-sm">
-                    <Calendar className="h-4 w-4 text-muted-foreground" />
-                    <span>{t('built')} {property.year_built}</span>
-                  </div>
-                )}
-
                 <Separator />
 
                 {/* Rent Info */}
                 <div className="space-y-2">
-                  <h4 className="font-medium flex items-center gap-2">
+                  <h4 className="font-medium flex items-center gap-2 text-sm">
                     <DollarSign className="h-4 w-4" />
                     {t('rentPerSqft')}
                   </h4>
                   
                   {latestRent ? (
                     <div className="space-y-1">
-                      <div className="flex items-center justify-between">
+                      <div className={cn(
+                        "flex items-center justify-between p-2 rounded",
+                        rentIsHighest && "bg-red-50 dark:bg-red-950/30",
+                        rentIsLowest && "bg-green-50 dark:bg-green-950/30"
+                      )}>
                         <span className="text-sm text-muted-foreground">{t('latest')}</span>
                         <div className="flex items-center gap-2">
-                          <span className="font-medium">${latestRent.toFixed(2)}</span>
-                          {latestRent === maxRent && properties.length > 1 && (
-                            <TrendingUp className="h-4 w-4 text-red-500" />
-                          )}
-                          {latestRent === minRent && properties.length > 1 && (
-                            <TrendingDown className="h-4 w-4 text-green-500" />
-                          )}
-                          {latestRent !== maxRent && latestRent !== minRent && properties.length > 1 && (
-                            <Minus className="h-4 w-4 text-gray-400" />
-                          )}
+                          <span className={cn(
+                            "font-medium",
+                            rentIsHighest && "text-red-600 dark:text-red-400",
+                            rentIsLowest && "text-green-600 dark:text-green-400"
+                          )}>
+                            ${latestRent.toFixed(2)}
+                          </span>
+                          {rentIsHighest && <TrendingUp className="h-4 w-4 text-red-500" />}
+                          {rentIsLowest && <TrendingDown className="h-4 w-4 text-green-500" />}
+                          {!rentIsHighest && !rentIsLowest && properties.length > 1 && <Minus className="h-4 w-4 text-gray-400" />}
                         </div>
                       </div>
                       
                       {avgRent && avgRent !== latestRent && (
-                        <div className="flex items-center justify-between">
+                        <div className="flex items-center justify-between p-2">
                           <span className="text-sm text-muted-foreground">{t('average')}</span>
                           <span className="font-medium">${avgRent.toFixed(2)}</span>
                         </div>
                       )}
                     </div>
                   ) : (
-                    <p className="text-sm text-muted-foreground">{t('noRentData')}</p>
+                    <p className="text-sm text-muted-foreground p-2 bg-muted rounded">{t('noRentData')}</p>
                   )}
                 </div>
 
                 <Separator />
 
+                {/* Price Info (if available) */}
+                {latestPrice && (
+                  <>
+                    <div className="space-y-2">
+                      <h4 className="font-medium flex items-center gap-2 text-sm">
+                        <DollarSign className="h-4 w-4" />
+                        {t('pricePerSqft', { defaultValue: 'Price/sqft' })}
+                      </h4>
+                      <div className={cn(
+                        "flex items-center justify-between p-2 rounded",
+                        priceIsHighest && "bg-red-50 dark:bg-red-950/30",
+                        priceIsLowest && "bg-green-50 dark:bg-green-950/30"
+                      )}>
+                        <span className="text-sm text-muted-foreground">{t('latest')}</span>
+                        <div className="flex items-center gap-2">
+                          <span className={cn(
+                            "font-medium",
+                            priceIsHighest && "text-red-600 dark:text-red-400",
+                            priceIsLowest && "text-green-600 dark:text-green-400"
+                          )}>
+                            ${latestPrice.toLocaleString()}
+                          </span>
+                          {priceIsHighest && <TrendingUp className="h-4 w-4 text-red-500" />}
+                          {priceIsLowest && <TrendingDown className="h-4 w-4 text-green-500" />}
+                        </div>
+                      </div>
+                    </div>
+                    <Separator />
+                  </>
+                )}
+
                 {/* Building Stats */}
                 <div className="space-y-2">
-                  <h4 className="font-medium flex items-center gap-2">
+                  <h4 className="font-medium flex items-center gap-2 text-sm">
                     <Building2 className="h-4 w-4" />
                     {t('building')}
                   </h4>
                   
                   <div className="space-y-1 text-sm">
                     {property.total_sqft && (
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">{tp('totalFloorArea')}:</span>
+                      <div className={cn(
+                        "flex justify-between p-1 rounded",
+                        isLargest && "bg-green-50 dark:bg-green-950/30 font-medium"
+                      )}>
+                        <span className="text-muted-foreground">{tp('totalFloorArea')}</span>
                         <span>{(property.total_sqft / 1000000).toFixed(2)}M sqft</span>
                       </div>
                     )}
                     {property.floors && (
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">{tp('numberOfFloors')}:</span>
+                      <div className="flex justify-between p-1">
+                        <span className="text-muted-foreground">{tp('numberOfFloors')}</span>
                         <span>{property.floors}</span>
+                      </div>
+                    )}
+                    {property.year_built && (
+                      <div className={cn(
+                        "flex justify-between p-1 rounded",
+                        isNewest && "bg-green-50 dark:bg-green-950/30 font-medium"
+                      )}>
+                        <span className="text-muted-foreground">{t('built')}</span>
+                        <span>{property.year_built}</span>
                       </div>
                     )}
                   </div>
                 </div>
 
+                <Separator />
+
+                {/* Recent Transactions Summary */}
+                <div className="space-y-2">
+                  <h4 className="font-medium text-sm">{t('recentTransactions', { defaultValue: 'Recent Transactions' })}</h4>
+                  {property.transactions.length > 0 ? (
+                    <div className="space-y-1">
+                      {property.transactions.slice(0, 3).map((t) => (
+                        <div key={t.id} className="flex justify-between text-sm p-1 bg-muted rounded">
+                          <span className="text-muted-foreground">
+                            {new Date(t.date).toLocaleDateString('en-HK', { month: 'short', year: 'numeric' })}
+                          </span>
+                          <span className="font-medium">
+                            {t.type === 'lease' ? 'Lease' : 'Sale'}
+                            {t.price_per_sqft && ` @ $${t.price_per_sqft.toFixed(0)}`}
+                          </span>
+                        </div>
+                      ))}
+                      {property.transactions.length > 3 && (
+                        <p className="text-xs text-center text-muted-foreground">
+                          +{property.transactions.length - 3} more
+                        </p>
+                      )}
+                    </div>
+                  ) : (
+                    <p className="text-sm text-muted-foreground p-2 bg-muted rounded">{t('noTransactions')}</p>
+                  )}
+                </div>
+
                 <Link href={`/properties/${property.id}`}>
                   <Button className="w-full" variant="outline">
-                    {tp('viewDetails', { defaultValue: 'View Details' })}
+                    <Maximize2 className="h-4 w-4 mr-2" />
+                    {t('viewDetails')}
                   </Button>
                 </Link>
               </CardContent>
@@ -227,7 +388,7 @@ function ComparisonSkeleton() {
       <Skeleton className="h-10 w-40" />
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {Array.from({ length: 3 }).map((_, i) => (
-          <Skeleton key={i} className="h-96" />
+          <Skeleton key={i} className="h-[600px]" />
         ))}
       </div>
     </div>

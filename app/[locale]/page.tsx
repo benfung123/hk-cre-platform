@@ -4,9 +4,10 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Search, MapPin } from 'lucide-react'
+import { Search, MapPin, ChevronDown } from 'lucide-react'
 import { getProperties, getMarketStats, getDistrictStats } from '@/lib/data'
 import { BuildingMapWrapper } from '@/components/building-map-wrapper'
+import Image from 'next/image'
 
 // Force dynamic rendering since we need database access
 export const dynamic = 'force-dynamic'
@@ -28,45 +29,85 @@ export default async function HomePage() {
 
   return (
     <div className="flex flex-col">
-      {/* Hero Section - Using banner as main image */}
-      <section className="py-8 bg-gradient-to-b from-muted/50 to-background">
-        <div className="container">
-          {/* Hero Banner Image */}
-          <div className="relative w-full max-w-5xl mx-auto mb-8">
-            <img
-              src="/og-image.png"
-              alt="HK Commercial Real Estate Platform"
-              className="w-full h-auto rounded-lg shadow-lg"
-            />
-          </div>
-          
-          {/* Search Bar */}
-          <div className="max-w-xl mx-auto">
-            <form action="/properties" className="flex items-center space-x-2">
+      {/* Hero Section - Full Width Immersive */}
+      <section className="relative w-full h-[85vh] min-h-[600px]">
+        {/* Background image - full bleed */}
+        <div className="absolute inset-0">
+          <Image
+            src="/og-image.png"
+            fill
+            className="object-cover"
+            alt="Hong Kong Commercial Real Estate"
+            priority
+          />
+          {/* Dark gradient overlay */}
+          <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/70" />
+        </div>
+
+        {/* Content - centered */}
+        <div className="relative z-10 flex flex-col items-center justify-center h-full px-4 text-center">
+          <h1 className="text-4xl md:text-6xl font-bold text-white mb-4 max-w-4xl">
+            {t('home.hero.title')}
+          </h1>
+          <p className="text-lg md:text-xl text-white/90 mb-8 max-w-2xl">
+            {t('home.hero.subtitle')}
+          </p>
+
+          {/* Search bar - prominent */}
+          <div className="w-full max-w-3xl">
+            <form action="/properties" className="flex items-center gap-2">
               <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                 <Input
                   type="search"
                   name="search"
                   placeholder={t('home.hero.searchPlaceholder')}
-                  className="pl-10 h-12"
+                  className="pl-10 h-14 text-lg bg-white/95 backdrop-blur-sm border-0 shadow-xl"
                 />
               </div>
-              <Button type="submit" size="lg">{t('home.hero.searchButton')}</Button>
+              <Button type="submit" size="lg" className="h-14 px-8">
+                {t('home.hero.searchButton')}
+              </Button>
             </form>
           </div>
-          
+
           {/* District Quick Links */}
           <div className="flex flex-wrap justify-center gap-2 mt-6">
             {['Central', 'Admiralty', 'Tsim Sha Tsui', 'Causeway Bay'].map((district) => (
               <Link key={district} href={`/properties?district=${district}`}>
-                <Badge variant="secondary" className="cursor-pointer hover:bg-secondary/80">
+                <Badge 
+                  variant="secondary" 
+                  className="cursor-pointer bg-white/20 hover:bg-white/30 text-white border-0 backdrop-blur-sm"
+                >
                   <MapPin className="h-3 w-3 mr-1" />
                   {getDistrictTranslation(district)}
                 </Badge>
               </Link>
             ))}
           </div>
+
+          {/* CTA buttons */}
+          <div className="flex gap-4 mt-8">
+            <Link href="/properties">
+              <Button size="lg" className="bg-white text-black hover:bg-white/90">
+                {t('home.hero.explore')}
+              </Button>
+            </Link>
+            <Link href="/analytics">
+              <Button 
+                size="lg" 
+                variant="outline" 
+                className="text-white border-white hover:bg-white/20"
+              >
+                {t('home.hero.learnMore')}
+              </Button>
+            </Link>
+          </div>
+        </div>
+
+        {/* Scroll indicator */}
+        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce">
+          <ChevronDown className="w-8 h-8 text-white/70" />
         </div>
       </section>
 
@@ -99,11 +140,11 @@ export default async function HomePage() {
         <div className="container">
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h2 className="text-3xl font-bold">Explore on Map</h2>
-              <p className="text-muted-foreground">Browse commercial properties across Hong Kong</p>
+              <h2 className="text-3xl font-bold">{t('home.map.title')}</h2>
+              <p className="text-muted-foreground">{t('home.map.subtitle')}</p>
             </div>
             <Link href="/properties?view=map">
-              <Button variant="outline">View Full Map</Button>
+              <Button variant="outline">{t('home.map.viewFullMap')}</Button>
             </Link>
           </div>
           
