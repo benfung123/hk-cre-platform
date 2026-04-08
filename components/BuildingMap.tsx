@@ -63,15 +63,41 @@ export function BuildingMap({
     )
   }, [properties, searchQuery])
 
+  // DEBUG: Log properties received by the map
+  useEffect(() => {
+    console.log('[BuildingMap] Properties received:', properties.length)
+    console.log('[BuildingMap] Properties with valid coordinates:', 
+      properties.filter(p => p.lat && p.lng && p.lat !== 0 && p.lng !== 0).length)
+    console.log('[BuildingMap] Sample properties:', properties.slice(0, 3).map(p => ({
+      name: p.name,
+      lat: p.lat,
+      lng: p.lng
+    })))
+  }, [properties])
+
   // Initialize Amap
   useEffect(() => {
-    if (!amapKey || !mapContainerRef.current || mapInstance) return
+    if (!amapKey) {
+      console.log('[BuildingMap] No AMap key found')
+      return
+    }
+    if (!mapContainerRef.current) {
+      console.log('[BuildingMap] Map container not ready')
+      return
+    }
+    if (mapInstance) {
+      console.log('[BuildingMap] Map already initialized')
+      return
+    }
+
+    console.log('[BuildingMap] Initializing AMap with key:', amapKey.substring(0, 8) + '...')
 
     AMapLoader.load({
       key: amapKey,
       version: '2.0',
       plugins: ['AMap.Scale', 'AMap.ToolBar', 'AMap.MapType', 'AMap.InfoWindow']
     }).then((AMap) => {
+      console.log('[BuildingMap] AMap loaded successfully')
       setAMap(AMap)
       
       if (!mapContainerRef.current) return
@@ -98,8 +124,9 @@ export function BuildingMap({
 
       setMapInstance(map)
       mapRef.current = map
+      console.log('[BuildingMap] Map instance created')
     }).catch((error) => {
-      console.error('Failed to load Amap:', error)
+      console.error('[BuildingMap] Failed to load Amap:', error)
     })
 
     return () => {
@@ -200,16 +227,25 @@ export function BuildingMap({
 
   // Update property markers
   useEffect(() => {
-    if (!mapInstance || !AMap) return
+    if (!mapInstance || !AMap) {
+      console.log('[BuildingMap] Map instance not ready:', { mapInstance: !!mapInstance, AMap: !!AMap })
+      return
+    }
+
+    console.log('[BuildingMap] Creating markers for', filteredProperties.length, 'properties')
 
     // Clear existing markers
     markers.forEach(marker => marker.setMap(null))
     
     // Create new markers
     const newMarkers: any[] = []
+    let skippedCount = 0
     
     filteredProperties.forEach((property) => {
-      if (!property.lat || !property.lng) return
+      if (!property.lat || !property.lng) {
+        skippedCount++
+        return
+      }
       
       const marker = new AMap.Marker({
         position: [property.lng, property.lat],
@@ -223,6 +259,7 @@ export function BuildingMap({
       newMarkers.push(marker)
     })
     
+    console.log(`[BuildingMap] Created ${newMarkers.length} markers, skipped ${skippedCount} (no coordinates)`)
     setMarkers(newMarkers)
   }, [filteredProperties, mapInstance, AMap, createMarkerContent, handlePropertyClick])
 
