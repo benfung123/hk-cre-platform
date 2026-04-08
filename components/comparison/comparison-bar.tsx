@@ -49,7 +49,7 @@ export function ComparisonBar() {
             image_url: undefined
           } : null
         })
-      )).filter((p): p is PropertyPreview => p !== null)
+      )).filter(p => p !== null) as PropertyPreview[]
       setProperties(loaded)
     }
 
