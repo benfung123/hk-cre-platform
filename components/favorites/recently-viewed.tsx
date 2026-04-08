@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -51,11 +51,14 @@ export function RecentlyViewed({
   const { recentlyViewed, isLoaded, getRecentlyViewed, clearRecentlyViewed, removeFromRecentlyViewed } = useFavorites()
   const [properties, setProperties] = useState<Property[]>([])
   const [loading, setLoading] = useState(true)
+  const hasLoadedRef = useRef(false)
 
-  // Load properties data
+  // Load properties data - only once
   useEffect(() => {
     async function loadProperties() {
-      if (!isLoaded) return
+      if (!isLoaded || hasLoadedRef.current) return
+      
+      hasLoadedRef.current = true
       
       if (recentlyViewed.length === 0) {
         setProperties([])
@@ -79,7 +82,7 @@ export function RecentlyViewed({
     }
 
     loadProperties()
-  }, [recentlyViewed, isLoaded, excludeIds, limit])
+  }, [isLoaded]) // Only depend on isLoaded, not on changing arrays
 
   // Don't render if no items and not loading
   if (!loading && properties.length === 0) {
@@ -245,16 +248,17 @@ export function RecentlyViewedInline({
   const t = useTranslations('favorites')
   const { recentlyViewed, isLoaded, getRecentlyViewed } = useFavorites()
   const [properties, setProperties] = useState<Property[]>([])
+  const hasLoadedRef = useRef(false)
 
   useEffect(() => {
     async function load() {
-      if (!isLoaded || recentlyViewed.length === 0) return
+      if (!isLoaded || hasLoadedRef.current || recentlyViewed.length === 0) return
+      hasLoadedRef.current = true
       const loaded = await getRecentlyViewed()
       setProperties(loaded.slice(0, limit))
     }
     load()
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [recentlyViewed, isLoaded, limit])
+  }, [isLoaded]) // Only depend on isLoaded
 
   if (!isLoaded || properties.length === 0) return null
 
