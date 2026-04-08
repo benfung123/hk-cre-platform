@@ -62,13 +62,31 @@ export function useFavorites(): UseFavoritesReturn {
       const favoritesStored = localStorage.getItem(FAVORITES_STORAGE_KEY)
       const recentlyViewedStored = localStorage.getItem(RECENTLY_VIEWED_KEY)
 
+      // Parse and validate - handle "null" string case
+      let parsedFavorites: string[] = []
+      let parsedRecentlyViewed: string[] = []
+      
+      if (favoritesStored) {
+        const parsed = JSON.parse(favoritesStored)
+        if (Array.isArray(parsed)) {
+          parsedFavorites = parsed
+        }
+      }
+      
+      if (recentlyViewedStored) {
+        const parsed = JSON.parse(recentlyViewedStored)
+        if (Array.isArray(parsed)) {
+          parsedRecentlyViewed = parsed
+        }
+      }
+
       console.log('[useFavorites] Loading from localStorage:', {
-        favoritesStored: favoritesStored ? JSON.parse(favoritesStored) : [],
-        recentlyViewedStored: recentlyViewedStored ? JSON.parse(recentlyViewedStored) : []
+        favoritesStored: parsedFavorites,
+        recentlyViewedStored: parsedRecentlyViewed
       })
 
-      setFavorites(favoritesStored ? JSON.parse(favoritesStored) : [])
-      setRecentlyViewed(recentlyViewedStored ? JSON.parse(recentlyViewedStored) : [])
+      setFavorites(parsedFavorites)
+      setRecentlyViewed(parsedRecentlyViewed)
     } catch (e) {
       console.error('[useFavorites] Failed to parse favorites/recently viewed:', e)
       setFavorites([])
