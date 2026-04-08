@@ -7,6 +7,7 @@ import { routing } from '@/src/i18n/routing';
 import { Analytics } from '@vercel/analytics/react';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 import { ToastProvider } from '@/components/ui/toast-provider';
+import { DiagnosticsProvider } from '@/components/diagnostics-provider';
 import "../globals.css";
 import { Navbar } from "@/components/navbar";
 
@@ -124,13 +125,15 @@ export default async function RootLayout({
       <body className="min-h-full flex flex-col bg-background">
         <NextIntlClientProvider messages={messages}>
           <ToastProvider>
-            <Navbar />
-            <main className="flex-1 px-4 sm:px-6 lg:px-8">{children}</main>
-            <footer className="border-t py-6 text-center text-sm text-muted-foreground">
-              <div className="container">
-                © {new Date().getFullYear()} HK CRE Platform. All rights reserved.
-              </div>
-            </footer>
+            <DiagnosticsProvider>
+              <Navbar />
+              <main className="flex-1 px-4 sm:px-6 lg:px-8">{children}</main>
+              <footer className="border-t py-6 text-center text-sm text-muted-foreground">
+                <div className="container">
+                  © {new Date().getFullYear()} HK CRE Platform. All rights reserved.
+                </div>
+              </footer>
+            </DiagnosticsProvider>
           </ToastProvider>
         </NextIntlClientProvider>
         <Analytics />
