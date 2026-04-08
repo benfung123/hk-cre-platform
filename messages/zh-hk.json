@@ -8,6 +8,7 @@
     "properties": "物業",
     "transactions": "成交",
     "analytics": "分析",
+    "marketTrends": "市場趨勢",
     "favorites": "我的收藏",
     "compare": "比較物業",
     "about": "關於",
@@ -212,6 +213,56 @@
     "alreadyInCompare": "已在比較列表中",
     "alreadyInFavorites": "已在收藏中",
     "favoritesFull": "收藏列表已滿"
+  },
+  "marketTrends": {
+    "page": {
+      "title": "市場趨勢",
+      "subtitle": "香港各區歷史租金及價格數據",
+      "retry": "重試",
+      "dataSource": "數據來源：香港差餉物業估價署 (RVD)"
+    },
+    "filters": {
+      "district": "地區",
+      "grade": "級別",
+      "timeRange": "時間範圍",
+      "metric": "指標",
+      "rent": "租金",
+      "price": "售價"
+    },
+    "metrics": {
+      "currentRent": "現時平均租金",
+      "currentPrice": "現時平均售價",
+      "avgValue": "平均數值",
+      "acrossSelected": "已選項目",
+      "yoyChange": "同比變化",
+      "vsLastYear": "對比去年",
+      "fiveYearTrend": "5年趨勢",
+      "vs5YearsAgo": "對比5年前",
+      "perSqft": "每平方呎",
+      "up": "上升",
+      "down": "下降"
+    },
+    "chart": {
+      "rentTrend": "租金走勢",
+      "priceTrend": "價格走勢",
+      "rentDescription": "每平方呎平均租金走勢",
+      "priceDescription": "每平方呎平均價格走勢",
+      "noData": "暫無數據",
+      "noDataDescription": "請選擇地區並調整篩選條件以查看數據"
+    },
+    "table": {
+      "districtComparison": "地區比較",
+      "comparisonDescription": "比較各區表現",
+      "district": "地區",
+      "currentValue": "現時數值",
+      "yoyChange": "同比變化",
+      "avgValue": "平均值",
+      "dataPoints": "數據點",
+      "trend": "趨勢",
+      "showingDistricts": "顯示 {count} 個地區",
+      "noDataDescription": "暫無比較數據",
+      "selectDistricts": "請從上方篩選器選擇地區"
+    }
   },
   "analytics": {
     "page": {

@@ -79,7 +79,7 @@ export function RecentlyViewed({
     }
 
     loadProperties()
-  }, [recentlyViewed, isLoaded, getRecentlyViewed, excludeIds, limit])
+  }, [recentlyViewed, isLoaded, excludeIds, limit])
 
   // Don't render if no items and not loading
   if (!loading && properties.length === 0) {
@@ -253,7 +253,8 @@ export function RecentlyViewedInline({
       setProperties(loaded.slice(0, limit))
     }
     load()
-  }, [recentlyViewed, isLoaded, getRecentlyViewed, limit])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [recentlyViewed, isLoaded, limit])
 
   if (!isLoaded || properties.length === 0) return null
 

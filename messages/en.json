@@ -8,6 +8,7 @@
     "properties": "Properties",
     "transactions": "Transactions",
     "analytics": "Analytics",
+    "marketTrends": "Market Trends",
     "favorites": "Watchlist",
     "compare": "Compare",
     "about": "About",
@@ -212,6 +213,56 @@
     "alreadyInCompare": "Already in compare list",
     "alreadyInFavorites": "Already in favorites",
     "favoritesFull": "Favorites list full"
+  },
+  "marketTrends": {
+    "page": {
+      "title": "Market Trends",
+      "subtitle": "Historical rent and price data across Hong Kong districts",
+      "retry": "Retry",
+      "dataSource": "Data source: Hong Kong Rating and Valuation Department (RVD)"
+    },
+    "filters": {
+      "district": "District",
+      "grade": "Grade",
+      "timeRange": "Time Range",
+      "metric": "Metric",
+      "rent": "Rent",
+      "price": "Price"
+    },
+    "metrics": {
+      "currentRent": "Current Avg Rent",
+      "currentPrice": "Current Avg Price",
+      "avgValue": "Average Value",
+      "acrossSelected": "Across selected",
+      "yoyChange": "YoY Change",
+      "vsLastYear": "vs last year",
+      "fiveYearTrend": "5-Year Trend",
+      "vs5YearsAgo": "vs 5 years ago",
+      "perSqft": "per sq ft",
+      "up": "Up",
+      "down": "Down"
+    },
+    "chart": {
+      "rentTrend": "Rent Trend",
+      "priceTrend": "Price Trend",
+      "rentDescription": "Average rent per square foot over time",
+      "priceDescription": "Average price per square foot over time",
+      "noData": "No data available",
+      "noDataDescription": "Select districts and adjust filters to view data"
+    },
+    "table": {
+      "districtComparison": "District Comparison",
+      "comparisonDescription": "Compare performance across districts",
+      "district": "District",
+      "currentValue": "Current Value",
+      "yoyChange": "YoY Change",
+      "avgValue": "Average",
+      "dataPoints": "Data Points",
+      "trend": "Trend",
+      "showingDistricts": "Showing {count} districts",
+      "noDataDescription": "No data available for comparison",
+      "selectDistricts": "Select districts from the filters above"
+    }
   },
   "analytics": {
     "page": {

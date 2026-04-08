@@ -75,7 +75,8 @@ export function ComparisonView() {
     }
 
     loadProperties()
-  }, [compareList, getPropertyById, getPropertyTransactions])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [compareList])
 
   if (loading) {
     return <ComparisonSkeleton />

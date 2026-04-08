@@ -68,7 +68,8 @@ export default function FavoritesPage() {
     }
 
     loadProperties()
-  }, [favorites, isLoaded, getFavorites])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [favorites, isLoaded])
 
   // Sync selected items with compare list
   useEffect(() => {

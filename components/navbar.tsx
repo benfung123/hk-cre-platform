@@ -26,6 +26,9 @@ export function Navbar() {
             <Link href="/properties" className="transition-colors hover:text-foreground/80">
               {t('properties')}
             </Link>
+            <Link href="/market-trends" className="transition-colors hover:text-foreground/80">
+              {t('marketTrends')}
+            </Link>
             <Link href="/favorites" className="transition-colors hover:text-foreground/80">
               {t('favorites')}
             </Link>
@@ -88,6 +91,9 @@ export function Navbar() {
             <nav className="flex flex-col space-y-2">
               <Link href="/properties" className="py-2" onClick={() => setIsMenuOpen(false)}>
                 {t('properties')}
+              </Link>
+              <Link href="/market-trends" className="py-2" onClick={() => setIsMenuOpen(false)}>
+                {t('marketTrends')}
               </Link>
               <Link href="/favorites" className="py-2" onClick={() => setIsMenuOpen(false)}>
                 {t('favorites')}
