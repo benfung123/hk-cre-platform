@@ -102,7 +102,18 @@ export default async function PropertyPage({ params }: PropertyPageProps) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-    <div className="container py-8">
+      
+      {/* Subtle Banner */}
+      <div className="relative h-24 bg-gradient-to-r from-blue-50 to-blue-100 overflow-hidden">
+        <img
+          src="/banner-property-detail.png"
+          alt=""
+          className="absolute inset-0 w-full h-full object-cover opacity-20"
+        />
+        <div className="absolute inset-0 bg-gradient-to-r from-background/80 to-transparent" />
+      </div>
+      
+      <div className="container py-8">
       <div className="flex flex-col gap-8">
         {/* Back Button */}
         <Link href="/properties">
