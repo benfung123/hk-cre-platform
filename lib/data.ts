@@ -25,6 +25,13 @@ export async function getProperties(filters?: {
 
   if (filters?.grade) {
     query = query.eq('grade', filters.grade)
+    // Grades only apply to office buildings - exclude retail/industrial
+    query = query
+      .not('name', 'ilike', '%Shop%')
+      .not('name', 'ilike', '%Retail%')
+      .not('name', 'ilike', '%Flatted Factory%')
+      .not('name', 'ilike', '%Industrial%')
+      .not('name', 'ilike', '%Logistics%')
   }
 
   if (filters?.search) {
@@ -44,11 +51,16 @@ export async function getProperties(filters?: {
 export async function getGradeDistribution(): Promise<{ grade: string; count: number }[]> {
   const supabase = await createClient()
   
-  // Note: data_type filter temporarily disabled - column needs to be added to DB
+  // Only count office properties for grade distribution
+  // Grades (A+, A, B, C) only apply to office buildings, not retail or industrial
   const { data, error } = await supabase
     .from('properties')
-    .select('grade')
-  // .or('data_type.eq.individual,data_type.is.null')
+    .select('grade, name')
+    .not('name', 'ilike', '%Shop%')
+    .not('name', 'ilike', '%Retail%')
+    .not('name', 'ilike', '%Flatted Factory%')
+    .not('name', 'ilike', '%Industrial%')
+    .not('name', 'ilike', '%Logistics%')
 
   if (error) {
     console.error('Error fetching grade distribution:', error)

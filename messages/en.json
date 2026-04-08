@@ -76,6 +76,7 @@
     "numberOfFloors": "Number of Floors",
     "currentTenants": "Current Tenants",
     "mapView": "Location",
+    "viewDetails": "View Details",
     "tabs": {
       "transactions": "Transactions",
       "tenancies": "Tenancies"
@@ -133,6 +134,19 @@
     "pageTitle": "My Watchlist",
     "backToProperties": "Back to Properties",
     "savedCount": "{count} {count, plural, one {property} other {properties}} saved",
+    "emptyTitle": "No Saved Properties",
+    "emptyDescription": "Save properties to your watchlist to track them and compare options.",
+    "browseButton": "Browse Properties",
+    "save": "Save",
+    "saved": "Saved",
+    "recentlyViewed": "Recently Viewed",
+    "marketTracking": "Market Tracking",
+    "trackingCount": "You're tracking {count} {count, plural, one {property} other {properties}}",
+    "exploreMore": "Explore More",
+    "browseAll": "Browse all properties →"
+  }
+}
+} other {properties}} saved",
     "emptyTitle": "No Saved Properties",
     "emptyDescription": "Save properties to your watchlist to track them and compare options.",
     "browseButton": "Browse Properties",

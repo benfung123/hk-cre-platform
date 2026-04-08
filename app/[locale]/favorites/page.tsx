@@ -161,7 +161,7 @@ export default function FavoritesPage() {
           <div className="space-y-4 pt-8 border-t">
             <div className="flex items-center gap-2">
               <Clock className="h-5 w-5 text-muted-foreground" />
-              <h2 className="text-xl font-semibold">Recently Viewed</h2>
+              <h2 className="text-xl font-semibold">{t('recentlyViewed')}</h2>
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -201,10 +201,10 @@ export default function FavoritesPage() {
               <CardContent className="p-4">
                 <div className="flex items-center gap-2">
                   <TrendingUp className="h-5 w-5 text-blue-600" />
-                  <span className="font-medium text-blue-900">Market Tracking</span>
+                  <span className="font-medium text-blue-900">{t('marketTracking')}</span>
                 </div>
                 <p className="text-sm text-blue-700 mt-1">
-                  You're tracking {properties.length} {properties.length === 1 ? 'property' : 'properties'}
+                  {t('trackingCount', { count: properties.length })}
                 </p>
               </CardContent>
             </Card>
@@ -213,10 +213,10 @@ export default function FavoritesPage() {
               <CardContent className="p-4">
                 <div className="flex items-center gap-2">
                   <Eye className="h-5 w-5 text-purple-600" />
-                  <span className="font-medium text-purple-900">Recently Viewed</span>
+                  <span className="font-medium text-purple-900">{t('recentlyViewed')}</span>
                 </div>
                 <p className="text-sm text-purple-700 mt-1">
-                  {recentlyViewed.length} {recentlyViewed.length === 1 ? 'property' : 'properties'} viewed recently
+                  {t('trackingCount', { count: recentlyViewed.length })}
                 </p>
               </CardContent>
             </Card>
@@ -225,11 +225,11 @@ export default function FavoritesPage() {
               <CardContent className="p-4">
                 <div className="flex items-center gap-2">
                   <Building2 className="h-5 w-5 text-green-600" />
-                  <span className="font-medium text-green-900">Explore More</span>
+                  <span className="font-medium text-green-900">{t('exploreMore')}</span>
                 </div>
                 <Link href="/properties">
                   <Button variant="link" className="p-0 h-auto text-sm text-green-700">
-                    Browse all properties →
+                    {t('browseAll')}
                   </Button>
                 </Link>
               </CardContent>

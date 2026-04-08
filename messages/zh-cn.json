@@ -76,6 +76,7 @@
     "numberOfFloors": "层数",
     "currentTenants": "现有租客",
     "mapView": "位置",
+    "viewDetails": "查看详情",
     "tabs": {
       "transactions": "成交",
       "tenancies": "租客"
@@ -131,6 +132,21 @@
   },
   "favorites": {
     "pageTitle": "我的收藏",
+    "backToProperties": "返回物业列表",
+    "savedCount": "已收藏 {count} 个物业",
+    "emptyTitle": "暂无收藏物业",
+    "emptyDescription": "将物业加入收藏夹以追踪和比较不同选项。",
+    "browseButton": "浏览物业",
+    "save": "收藏",
+    "saved": "已收藏",
+    "recentlyViewed": "最近浏览",
+    "marketTracking": "市场追踪",
+    "trackingCount": "正在追踪 {count} 个物业",
+    "exploreMore": "探索更多",
+    "browseAll": "浏览全部物业 →"
+  }
+}
+��藏",
     "backToProperties": "返回物业列表",
     "savedCount": "已收藏 {count} 个物业",
     "emptyTitle": "暂无收藏物业",

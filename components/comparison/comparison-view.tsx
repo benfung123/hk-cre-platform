@@ -29,7 +29,8 @@ interface PropertyWithTransactions extends Property {
 }
 
 export function ComparisonView() {
-  const t = useTranslations()
+  const t = useTranslations('compare')
+  const tp = useTranslations('propertyDetail')
   const { comparisonList, removeFromComparison, clearComparison } = useComparison()
   const { getPropertyById, getPropertyTransactions } = usePropertyData()
   const [properties, setProperties] = useState<PropertyWithTransactions[]>([])
@@ -92,13 +93,13 @@ export function ComparisonView() {
           <Link href="/properties">
             <Button variant="ghost" size="sm">
               <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Properties
+              {t('backToProperties')}
             </Button>
           </Link>
         </div>
         <Button variant="outline" size="sm" onClick={clearComparison}>
           <X className="h-4 w-4 mr-2" />
-          Clear All
+          {t('clearAll')}
         </Button>
       </div>
 
@@ -138,7 +139,7 @@ export function ComparisonView() {
                 {property.year_built && (
                   <div className="flex items-center gap-2 text-sm">
                     <Calendar className="h-4 w-4 text-muted-foreground" />
-                    <span>Built {property.year_built}</span>
+                    <span>{t('built')} {property.year_built}</span>
                   </div>
                 )}
 
@@ -148,13 +149,13 @@ export function ComparisonView() {
                 <div className="space-y-2">
                   <h4 className="font-medium flex items-center gap-2">
                     <DollarSign className="h-4 w-4" />
-                    Rent per sqft
+                    {t('rentPerSqft')}
                   </h4>
                   
                   {latestRent ? (
                     <div className="space-y-1">
                       <div className="flex items-center justify-between">
-                        <span className="text-sm text-muted-foreground">Latest:</span>
+                        <span className="text-sm text-muted-foreground">{t('latest')}</span>
                         <div className="flex items-center gap-2">
                           <span className="font-medium">${latestRent.toFixed(2)}</span>
                           {latestRent === maxRent && properties.length > 1 && (
@@ -171,13 +172,13 @@ export function ComparisonView() {
                       
                       {avgRent && avgRent !== latestRent && (
                         <div className="flex items-center justify-between">
-                          <span className="text-sm text-muted-foreground">Average:</span>
+                          <span className="text-sm text-muted-foreground">{t('average')}</span>
                           <span className="font-medium">${avgRent.toFixed(2)}</span>
                         </div>
                       )}
                     </div>
                   ) : (
-                    <p className="text-sm text-muted-foreground">No rent data</p>
+                    <p className="text-sm text-muted-foreground">{t('noRentData')}</p>
                   )}
                 </div>
 
@@ -187,19 +188,19 @@ export function ComparisonView() {
                 <div className="space-y-2">
                   <h4 className="font-medium flex items-center gap-2">
                     <Building2 className="h-4 w-4" />
-                    Building
+                    {t('building')}
                   </h4>
                   
                   <div className="space-y-1 text-sm">
                     {property.total_sqft && (
                       <div className="flex justify-between">
-                        <span className="text-muted-foreground">Total Area:</span>
+                        <span className="text-muted-foreground">{tp('totalFloorArea')}:</span>
                         <span>{(property.total_sqft / 1000000).toFixed(2)}M sqft</span>
                       </div>
                     )}
                     {property.floors && (
                       <div className="flex justify-between">
-                        <span className="text-muted-foreground">Floors:</span>
+                        <span className="text-muted-foreground">{tp('numberOfFloors')}:</span>
                         <span>{property.floors}</span>
                       </div>
                     )}
@@ -208,7 +209,7 @@ export function ComparisonView() {
 
                 <Link href={`/properties/${property.id}`}>
                   <Button className="w-full" variant="outline">
-                    View Details
+                    {tp('viewDetails', { defaultValue: 'View Details' })}
                   </Button>
                 </Link>
               </CardContent>
@@ -234,16 +235,17 @@ function ComparisonSkeleton() {
 }
 
 function EmptyComparison() {
+  const t = useTranslations('compare')
   return (
     <div className="text-center py-16">
       <Scale className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
-      <h2 className="text-xl font-semibold mb-2">No Properties Selected</h2>
+      <h2 className="text-xl font-semibold mb-2">{t('emptyTitle')}</h2>
       <p className="text-muted-foreground mb-6">
-        Select properties from the list to compare them side by side.
+        {t('emptyDescription')}
       </p>
       <Link href="/properties">
         <Button>
-          Browse Properties
+          {t('browseProperties')}
         </Button>
       </Link>
     </div>
