@@ -1,6 +1,4 @@
-'use client'
-
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
@@ -37,42 +35,42 @@ type ViewMode = 'list' | 'map' | 'split'
 export function PropertyList({ properties }: PropertyListProps) {
   const t = useTranslations()
   const searchParams = useSearchParams()
-  const [viewMode, setViewMode] = useState<ViewMode>('list')
+  
+  // Initialize view mode from URL on first render only
+  const initialViewMode = useMemo(() => {
+    const view = searchParams.get('view')
+    if (view === 'map' || view === 'split' || view === 'list') {
+      return view as ViewMode
+    }
+    return 'list' as ViewMode
+  }, [searchParams])
+  
+  const [viewMode, setViewMode] = useState<ViewMode>(initialViewMode)
   const [mounted, setMounted] = useState(false)
   
   // Get store values
   const { addToRecentlyViewed, setHydrated } = useFavoritesStore()
   
-  // Handle hydration
+  // Handle hydration on mount only
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true)
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setHydrated(true)
   }, [setHydrated])
-  
-  // Read view from URL on mount
-  useEffect(() => {
-    const view = searchParams.get('view')
-    if (view === 'map' || view === 'split' || view === 'list') {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setViewMode(view)
-    }
-  }, [searchParams])
   
   const [searchQuery, setSearchQuery] = useState('')
   const [showFilters, setShowFilters] = useState(false)
 
   // Filter properties based on search
-  const filteredProperties = properties.filter(property => {
-    if (!searchQuery.trim()) return true
+  const filteredProperties = useMemo(() => {
+    if (!searchQuery.trim()) return properties
+    
     const query = searchQuery.toLowerCase()
-    return (
+    return properties.filter(property => 
       property.name.toLowerCase().includes(query) ||
       property.address.toLowerCase().includes(query) ||
       property.district.toLowerCase().includes(query)
     )
-  })
+  }, [properties, searchQuery])
 
   // Track property view for recently viewed
   const trackPropertyView = useCallback((propertyId: string) => {
