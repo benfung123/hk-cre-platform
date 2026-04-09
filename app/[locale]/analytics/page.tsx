@@ -1,5 +1,6 @@
 import { Suspense } from 'react'
 import { getTranslations } from 'next-intl/server'
+import { createClient } from '@/lib/supabase/server'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { 
@@ -32,29 +33,127 @@ interface AnalyticsData {
 }
 
 async function getAnalyticsData(): Promise<AnalyticsData> {
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
-  
-  try {
-    const response = await fetch(`${baseUrl}/api/analytics/overview`, {
-      cache: 'no-store'
+  const supabase = await createClient()
+
+  // 1. Get total property count
+  const { count: totalProperties } = await supabase
+    .from('properties')
+    .select('*', { count: 'exact', head: true })
+
+  // 2. Get all transactions for averages
+  const { data: transactions } = await supabase
+    .from('transactions')
+    .select('price_per_sqft, type')
+
+  const leaseTransactions = transactions?.filter(t => t.type === 'lease') || []
+  const avgRent = leaseTransactions.length > 0
+    ? Math.round(leaseTransactions.reduce((sum, t) => sum + (t.price_per_sqft || 0), 0) / leaseTransactions.length)
+    : 0
+
+  const avgPrice = transactions && transactions.length > 0
+    ? Math.round(transactions.reduce((sum, t) => sum + (t.price_per_sqft || 0), 0) / transactions.length)
+    : 0
+
+  const totalTransactions = transactions?.length || 0
+
+  // 3. Get grade distribution
+  const { data: gradeData } = await supabase
+    .from('properties')
+    .select('grade, id')
+    .not('grade', 'is', null)
+
+  // Get all transactions for grade/district calculations
+  const { data: allTransactions } = await supabase
+    .from('transactions')
+    .select('property_id, price_per_sqft, type')
+
+  // Build grade distribution
+  const gradeMap = new Map<string, { count: number; rents: number[]; prices: number[] }>()
+  gradeData?.forEach(property => {
+    const grade = property.grade || 'Unknown'
+    if (!gradeMap.has(grade)) {
+      gradeMap.set(grade, { count: 0, rents: [], prices: [] })
+    }
+    const gradeInfo = gradeMap.get(grade)!
+    gradeInfo.count++
+
+    const propertyTransactions = allTransactions?.filter(t => t.property_id === property.id) || []
+    propertyTransactions.forEach(t => {
+      if (t.price_per_sqft) {
+        gradeInfo.prices.push(t.price_per_sqft)
+        if (t.type === 'lease') {
+          gradeInfo.rents.push(t.price_per_sqft)
+        }
+      }
     })
-    
-    if (!response.ok) {
-      throw new Error('Failed to fetch analytics data')
+  })
+
+  const gradeDistribution = Array.from(gradeMap.entries())
+    .map(([grade, data]) => ({
+      grade,
+      count: data.count,
+      avgRent: data.rents.length > 0 
+        ? Math.round(data.rents.reduce((a, b) => a + b, 0) / data.rents.length)
+        : 0,
+      avgPrice: data.prices.length > 0
+        ? Math.round(data.prices.reduce((a, b) => a + b, 0) / data.prices.length)
+        : 0
+    }))
+    .sort((a, b) => {
+      const gradeOrder = ['A+', 'A', 'B', 'C']
+      const indexA = gradeOrder.indexOf(a.grade)
+      const indexB = gradeOrder.indexOf(b.grade)
+      if (indexA !== -1 && indexB !== -1) return indexA - indexB
+      if (indexA !== -1) return -1
+      if (indexB !== -1) return 1
+      return a.grade.localeCompare(b.grade)
+    })
+
+  // 4. Get district summary
+  const { data: districtData } = await supabase
+    .from('properties')
+    .select('district, id')
+
+  const districtMap = new Map<string, { count: number; rents: number[]; prices: number[] }>()
+  districtData?.forEach(property => {
+    const district = property.district
+    if (!districtMap.has(district)) {
+      districtMap.set(district, { count: 0, rents: [], prices: [] })
     }
-    
-    return response.json()
-  } catch (error) {
-    console.error('Error fetching analytics:', error)
-    // Return default data if API fails
-    return {
-      totalProperties: 0,
-      avgRent: 0,
-      avgPrice: 0,
-      totalTransactions: 0,
-      gradeDistribution: [],
-      districtSummary: []
-    }
+    const districtInfo = districtMap.get(district)!
+    districtInfo.count++
+
+    const propertyTransactions = allTransactions?.filter(t => t.property_id === property.id) || []
+    propertyTransactions.forEach(t => {
+      if (t.price_per_sqft) {
+        districtInfo.prices.push(t.price_per_sqft)
+        if (t.type === 'lease') {
+          districtInfo.rents.push(t.price_per_sqft)
+        }
+      }
+    })
+  })
+
+  const districtSummary = Array.from(districtMap.entries())
+    .map(([district, data]) => ({
+      district,
+      count: data.count,
+      avgRent: data.rents.length > 0
+        ? Math.round(data.rents.reduce((a, b) => a + b, 0) / data.rents.length)
+        : 0,
+      avgPrice: data.prices.length > 0
+        ? Math.round(data.prices.reduce((a, b) => a + b, 0) / data.prices.length)
+        : 0
+    }))
+    .sort((a, b) => b.count - a.count)
+
+  return {
+    totalProperties: totalProperties || 0,
+    avgRent,
+    avgPrice,
+    totalTransactions,
+    gradeDistribution,
+    districtSummary
   }
 }
 

@@ -30,13 +30,10 @@ export async function GET() {
   try {
     const supabase = await createClient()
 
-    // Get total properties count (excluding aggregate data)
+    // Get total properties count
     const { count: totalProperties, error: countError } = await supabase
       .from('properties')
       .select('*', { count: 'exact', head: true })
-      .not('name', 'ilike', '%Grade%A%Office%')
-      .not('name', 'ilike', '%Grade%B%Office%')
-      .not('name', 'ilike', '%Grade%C%Office%')
 
     if (countError) {
       console.error('Error fetching property count:', countError)
@@ -156,9 +153,6 @@ export async function GET() {
     const { data: districtData, error: districtError } = await supabase
       .from('properties')
       .select('district, id')
-      .not('name', 'ilike', '%Grade%A%Office%')
-      .not('name', 'ilike', '%Grade%B%Office%')
-      .not('name', 'ilike', '%Grade%C%Office%')
 
     if (districtError) {
       console.error('Error fetching district data:', districtError)
