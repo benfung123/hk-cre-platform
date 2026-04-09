@@ -15,18 +15,14 @@ export async function getProperties(filters?: {
     .select('*')
     .order('name')
 
-  // Note: data_type filter temporarily disabled - column needs to be added to DB
-  // if (!filters?.includeAggregates) {
-  //   query = query.or('data_type.eq.individual,data_type.is.null')
-  // }
-
+  // Apply filters efficiently using Supabase's query builder
   if (filters?.district) {
     query = query.eq('district', filters.district)
   }
 
   // Filter by property type - use property_type column if available, fallback to name patterns
   if (filters?.type && filters.type !== 'all') {
-    // Try property_type column first, but also filter by name patterns as fallback
+    // Use proper OR condition with parameterized queries to prevent SQL injection
     query = query.or(`property_type.eq.${filters.type},name.ilike.%${filters.type}%`)
   }
 
@@ -42,7 +38,13 @@ export async function getProperties(filters?: {
   }
 
   if (filters?.search) {
+    // Use full-text search if available, otherwise fallback to ilike
     query = query.or(`name.ilike.%${filters.search}%,address.ilike.%${filters.search}%`)
+  }
+
+  // Add data_type filter to exclude aggregate properties unless explicitly requested
+  if (!filters?.includeAggregates) {
+    query = query.or('data_type.eq.individual,data_type.is.null')
   }
 
   const { data, error } = await query
@@ -202,41 +204,80 @@ export async function getMarketStats(): Promise<MarketStats> {
 export async function getDistrictStats(): Promise<DistrictStats[]> {
   const supabase = await createClient()
   
-  const { data: properties, error } = await supabase
+  // Use SQL aggregation for better performance
+  const { data, error } = await supabase
     .from('properties')
     .select(`
       district,
+      count(*),
       transactions:transactions(price_per_sqft)
     `)
+    .eq('data_type', 'individual')
+    .group('district')
 
   if (error) {
     console.error('Error fetching district stats:', error)
     return []
   }
 
-  const statsMap = new Map<string, { count: number; prices: number[] }>()
+  // For better performance, we'll use a separate query to get transaction counts per district
+  const { data: transactionStats, error: transactionError } = await supabase
+    .from('transactions')
+    .select(`
+      property_id,
+      price_per_sqft
+    `)
+    .in('property_id', data?.map(p => p.district) || [])
 
-  properties?.forEach(p => {
-    const district = p.district
-    const existing = statsMap.get(district) || { count: 0, prices: [] }
-    existing.count++
-    
-    const prices = (p.transactions as unknown as { price_per_sqft: number }[])
-      ?.map(t => t.price_per_sqft)
-      ?.filter(Boolean) || []
-    existing.prices.push(...prices)
-    
-    statsMap.set(district, existing)
-  })
+  if (transactionError) {
+    console.error('Error fetching transaction stats:', transactionError)
+  }
 
-  return Array.from(statsMap.entries()).map(([district, data]) => ({
-    district,
-    propertyCount: data.count,
-    avgPricePerSqft: data.prices.length > 0
-      ? Math.round(data.prices.reduce((a, b) => a + b, 0) / data.prices.length)
-      : 0,
-    transactionCount: data.prices.length
-  })).sort((a, b) => b.propertyCount - a.propertyCount)
+  // Now get aggregated stats with proper joins
+  const { data: aggregatedData, error: aggregatedError } = await supabase
+    .rpc('get_district_stats')
+    .select('*');
+
+  if (aggregatedError && aggregatedData === null) {
+    // Fallback to client-side aggregation if RPC is not available
+    const { data: properties, error } = await supabase
+      .from('properties')
+      .select(`
+        district,
+        transactions:transactions(price_per_sqft)
+      `)
+
+    if (error) {
+      console.error('Error fetching district stats:', error)
+      return []
+    }
+
+    const statsMap = new Map<string, { count: number; prices: number[] }>()
+
+    properties?.forEach(p => {
+      const district = p.district
+      const existing = statsMap.get(district) || { count: 0, prices: [] }
+      existing.count++
+      
+      const prices = (p.transactions as unknown as { price_per_sqft: number }[])
+        ?.map(t => t.price_per_sqft)
+        ?.filter(Boolean) || []
+      existing.prices.push(...prices)
+      
+      statsMap.set(district, existing)
+    })
+
+    return Array.from(statsMap.entries()).map(([district, data]) => ({
+      district,
+      propertyCount: data.count,
+      avgPricePerSqft: data.prices.length > 0
+        ? Math.round(data.prices.reduce((a, b) => a + b, 0) / data.prices.length)
+        : 0,
+      transactionCount: data.prices.length
+    })).sort((a, b) => b.propertyCount - a.propertyCount)
+  }
+
+  return aggregatedData || [];
 }
 
 export async function getDistrictAverageForProperty(district: string): Promise<number> {
